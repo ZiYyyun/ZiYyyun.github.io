@@ -4,6 +4,7 @@ type BlogPost = CollectionEntry<'blog'>;
 
 export type TagSummary = {
 	name: string;
+	slug: string;
 	count: number;
 	posts: {
 		title: string;
@@ -11,6 +12,16 @@ export type TagSummary = {
 		description: string;
 	}[];
 };
+
+export function tagSlug(value: string) {
+	return (
+		value
+			.normalize('NFKD')
+			.replace(/[^\p{Letter}\p{Number}]+/gu, '-')
+			.replace(/^-+|-+$/g, '')
+			.toLowerCase() || 'tag'
+	);
+}
 
 function extractTags(body = '') {
 	const tags = new Set<string>();
@@ -41,7 +52,7 @@ export function getTagSummaries(posts: BlogPost[], baseUrl: string): TagSummary[
 
 	for (const post of posts) {
 		for (const tag of extractTags(post.body)) {
-			const summary = tagMap.get(tag) ?? { name: tag, count: 0, posts: [] };
+			const summary = tagMap.get(tag) ?? { name: tag, slug: tagSlug(tag), count: 0, posts: [] };
 			summary.count += 1;
 			summary.posts.push({
 				title: post.data.title,
