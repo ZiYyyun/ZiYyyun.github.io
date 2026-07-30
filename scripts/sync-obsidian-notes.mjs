@@ -6,6 +6,7 @@ import {
 	readFileSync,
 	rmSync,
 	statSync,
+	copyFileSync,
 	writeFileSync,
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
@@ -17,7 +18,8 @@ const branch = process.env.OBSIDIAN_REPO_BRANCH ?? 'main';
 const localVaultPath = process.env.OBSIDIAN_VAULT_PATH;
 const cacheDir = resolve(root, '.cache', 'obsidian-vault');
 const outputDir = resolve(root, 'src', 'content', 'blog');
-const manifestNames = ['blog_pages.database', 'blog_pages.md', 'blog_pages.base'];
+const assetOutputDir = resolve(root, 'public', 'obsidian-assets');
+const manifestNames = ['blog_pages.database', 'blog_pages.md', 'blog_pages.base', 'blog_pages', 'blog-pages'];
 const dryRun = process.env.OBSIDIAN_SYNC_DRY_RUN === '1';
 
 function run(command, args, options = {}) {
@@ -61,8 +63,35 @@ function stripMdExtension(value) {
 }
 
 function findManifest(vaultPath) {
-	const manifests = walkFiles(vaultPath, (file) => manifestNames.includes(basename(file)));
+	const manifests = walkFiles(vaultPath, (file) => {
+		const name = basename(file).toLowerCase();
+		const withoutExtension = name.replace(/\.[^.]+$/, '');
+		return manifestNames.includes(name) || manifestNames.includes(withoutExtension);
+	});
 	return manifests[0];
+}
+
+function parseBaseTags(content) {
+	const tags = new Set();
+	const tagPattern = /file\.tags\.contains\((["'])(#?[^"']+)\1\)/g;
+	let match;
+
+	while ((match = tagPattern.exec(content)) !== null) {
+		tags.add(match[2].replace(/^#/, '').trim());
+	}
+
+	return [...tags].filter(Boolean);
+}
+
+function fileHasTag(file, tag) {
+	const content = readFileSync(file, 'utf8');
+	const bareTag = tag.replace(/^#/, '');
+	const escaped = bareTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const tagPattern = new RegExp(`(^|\\s)#${escaped}(?=\\s|$)`, 'm');
+	const yamlTagPattern = new RegExp(`(^|[\\s\\[,-])#?${escaped}(?=$|[\\s\\],])`, 'm');
+	const { frontmatter, body } = parseFrontmatter(content);
+
+	return tagPattern.test(body) || (frontmatter ? yamlTagPattern.test(frontmatter) : false);
 }
 
 function parseManifest(content) {
@@ -113,6 +142,20 @@ function buildNoteIndex(vaultPath) {
 	return { byRelativePath, byName };
 }
 
+function buildAssetIndex(vaultPath) {
+	const files = walkFiles(vaultPath, (file) => extname(file).toLowerCase() !== '.md');
+	const byRelativePath = new Map();
+	const byName = new Map();
+
+	for (const file of files) {
+		const relativePath = normalizePath(relative(vaultPath, file));
+		byRelativePath.set(relativePath.toLowerCase(), file);
+		byName.set(basename(file).toLowerCase(), file);
+	}
+
+	return { byRelativePath, byName };
+}
+
 function resolveNote(entry, index) {
 	const normalized = normalizePath(entry);
 	const withExtension = normalized.endsWith('.md') ? normalized : `${normalized}.md`;
@@ -145,6 +188,12 @@ function slugify(value) {
 		.join('--');
 }
 
+function slugifyAsset(value) {
+	const extension = extname(value).toLowerCase();
+	const name = value.slice(0, -extension.length);
+	return `${slugify(name) || 'asset'}${extension}`;
+}
+
 function parseFrontmatter(content) {
 	if (!content.startsWith('---')) return { frontmatter: null, body: content };
 	const end = content.indexOf('\n---', 3);
@@ -167,7 +216,50 @@ function getFileDate(file) {
 	return statSync(file).mtime.toISOString().slice(0, 10);
 }
 
-function toBlogMarkdown(file, vaultPath) {
+function resolveAsset(target, assetIndex) {
+	const normalized = normalizePath(target);
+	return assetIndex.byRelativePath.get(normalized.toLowerCase()) ?? assetIndex.byName.get(basename(normalized).toLowerCase());
+}
+
+function buildPublishedLinkIndex(files, vaultPath) {
+	const publishedLinks = new Map();
+
+	for (const file of files) {
+		const relativePath = normalizePath(relative(vaultPath, file));
+		const slug = slugify(relativePath);
+		const url = `/blog/${slug}/`;
+		publishedLinks.set(stripMdExtension(relativePath).toLowerCase(), url);
+		publishedLinks.set(stripMdExtension(basename(file)).toLowerCase(), url);
+	}
+
+	return publishedLinks;
+}
+
+function transformObsidianBody(body, assetIndex, copiedAssets, publishedLinks) {
+	return body
+		.split(/\r?\n/)
+		.filter((line) => line.trim() !== '#blog')
+		.join('\n')
+		.replace(/!\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g, (_match, target) => {
+			const asset = resolveAsset(target, assetIndex);
+			if (!asset) return '';
+
+			const fileName = slugifyAsset(relative(dirname(asset), asset));
+			const outputPath = join(assetOutputDir, fileName);
+			copyFileSync(asset, outputPath);
+			copiedAssets.add(fileName);
+			return `![${basename(target)}](/obsidian-assets/${encodeURI(fileName)})`;
+		})
+		.replace(/\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|([^\]]*))?\]\]/g, (_match, target, alias) => {
+			const label = alias || basename(target);
+			const key = normalizePath(target).toLowerCase();
+			const url = publishedLinks.get(stripMdExtension(key));
+			const marker = `<!-- [[${target}]] -->`;
+			return url ? `[${label}](${url})${marker}` : `${label}${marker}`;
+		});
+}
+
+function toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLinks) {
 	const original = readFileSync(file, 'utf8');
 	const { frontmatter, body } = parseFrontmatter(original);
 	const relativePath = normalizePath(relative(vaultPath, file));
@@ -176,13 +268,14 @@ function toBlogMarkdown(file, vaultPath) {
 
 	if (!hasFrontmatterField(frontmatter, 'title')) generatedFields.push(`title: ${yamlQuote(title)}`);
 	if (!hasFrontmatterField(frontmatter, 'description')) {
-		generatedFields.push(`description: ${yamlQuote(`来自 Obsidian 的笔记：${title}`)}`);
+		generatedFields.push(`description: ${yamlQuote(`Obsidian note: ${title}`)}`);
 	}
 	if (!hasFrontmatterField(frontmatter, 'pubDate')) generatedFields.push(`pubDate: '${getFileDate(file)}'`);
 	generatedFields.push(`sourcePath: ${yamlQuote(relativePath)}`);
 
 	const mergedFrontmatter = [frontmatter, ...generatedFields].filter(Boolean).join('\n');
-	return `---\n${mergedFrontmatter}\n---\n\n${body.trim()}\n`;
+	const transformedBody = transformObsidianBody(body, assetIndex, copiedAssets, publishedLinks);
+	return `---\n${mergedFrontmatter}\n---\n\n${transformedBody.trim()}\n`;
 }
 
 function syncNotes() {
@@ -191,42 +284,56 @@ function syncNotes() {
 
 	if (!manifest) {
 		console.warn(
-			`No publish manifest found. Create blog_pages.database in the Obsidian repo and add entries like [[I_知识节点/Example Note]].`,
+			`No publish manifest found. Create blog_pages.database in the Obsidian repo and add entries like [[I_knowledge/Example Note]].`,
 		);
 		return;
 	}
 
-	const entries = parseManifest(readFileSync(manifest, 'utf8'));
-	if (entries.length === 0) {
+	const manifestContent = readFileSync(manifest, 'utf8');
+	const baseTags = parseBaseTags(manifestContent);
+	const entries = parseManifest(manifestContent);
+	if (entries.length === 0 && baseTags.length === 0) {
 		console.warn(`Publish manifest is empty: ${manifest}`);
 		return;
 	}
 
 	const index = buildNoteIndex(vaultPath);
-	const files = entries.map((entry) => resolveNote(entry, index));
+	const assetIndex = buildAssetIndex(vaultPath);
+	const files = [
+		...entries.map((entry) => resolveNote(entry, index)),
+		...baseTags.flatMap((tag) =>
+			walkFiles(vaultPath, (file) => extname(file).toLowerCase() === '.md' && fileHasTag(file, tag)),
+		),
+	];
+	const uniqueFiles = [...new Set(files)];
 
 	if (dryRun) {
-		for (const file of files) {
+		for (const file of uniqueFiles) {
 			const relativePath = normalizePath(relative(vaultPath, file));
 			const slug = slugify(relativePath);
 			console.log(`[dry-run] ${relativePath} -> src/content/blog/${slug}.md`);
 		}
-		console.log(`[dry-run] ${files.length} note(s) selected from ${relative(vaultPath, manifest).split(sep).join('/')}.`);
+		console.log(`[dry-run] ${uniqueFiles.length} note(s) selected from ${relative(vaultPath, manifest).split(sep).join('/')}.`);
 		return;
 	}
 
 	rmSync(outputDir, { recursive: true, force: true });
+	rmSync(assetOutputDir, { recursive: true, force: true });
 	mkdirSync(outputDir, { recursive: true });
+	mkdirSync(assetOutputDir, { recursive: true });
+	const copiedAssets = new Set();
+	const publishedLinks = buildPublishedLinkIndex(uniqueFiles, vaultPath);
 
-	for (const file of files) {
+	for (const file of uniqueFiles) {
 		const relativePath = normalizePath(relative(vaultPath, file));
 		const slug = slugify(relativePath);
 		const outputFile = join(outputDir, `${slug}.md`);
-		writeFileSync(outputFile, toBlogMarkdown(file, vaultPath), 'utf8');
+		writeFileSync(outputFile, toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLinks), 'utf8');
 		console.log(`Synced ${relativePath} -> ${relative(root, outputFile).split(sep).join('/')}`);
 	}
 
-	console.log(`Synced ${files.length} note(s) from ${relative(vaultPath, manifest).split(sep).join('/')}.`);
+	console.log(`Synced ${uniqueFiles.length} note(s) from ${relative(vaultPath, manifest).split(sep).join('/')}.`);
+	console.log(`Copied ${copiedAssets.size} asset(s).`);
 }
 
 syncNotes();
