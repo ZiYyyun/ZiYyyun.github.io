@@ -1,0 +1,129 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import NoteStatus from '../components/NoteStatus';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<p class="eyebrow">Markdown notes to personal blog</p>
+				<h1>Hello World, ZiYyun Blog.</h1>
+				<p>
+					这里会自动收集仓库里的 Markdown / MDX 笔记，编译成静态博客，并通过 GitHub Pages 发布。
+					先让它跑起来，再把 Obsidian 笔记同步进内容目录。
+				</p>
+				<div class="actions">
+					<a href={`${baseUrl}blog/`}>查看笔记</a>
+					<NoteStatus count={posts.length} client:load />
+				</div>
+			</section>
+
+			<section>
+				<h2>最近笔记</h2>
+				<ul class="post-list">
+					{
+						posts.slice(0, 3).map((post) => (
+							<li>
+								<a href={`${baseUrl}blog/${post.id}/`}>
+									<strong>{post.data.title}</strong>
+									<span>{post.data.description}</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		padding: 4rem 0 3rem;
+	}
+
+	.eyebrow {
+		margin-bottom: 0.5rem;
+		color: rgb(var(--accent));
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	h1 {
+		margin: 0 0 1rem;
+		font-size: clamp(2.25rem, 8vw, 4.25rem);
+		line-height: 1;
+	}
+
+	.hero p {
+		max-width: 720px;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 2rem;
+	}
+
+	.actions a,
+	:global(.note-status) {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		min-height: 44px;
+		padding: 0 1rem;
+		border: 1px solid rgb(var(--black));
+		border-radius: 8px;
+		background: rgb(var(--black));
+		color: white;
+		font: inherit;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	:global(.note-status) {
+		background: white;
+		color: rgb(var(--black));
+	}
+
+	:global(.note-status span) {
+		font-weight: 700;
+	}
+
+	.post-list {
+		display: grid;
+		gap: 1rem;
+		padding: 0;
+		list-style: none;
+	}
+
+	.post-list a {
+		display: grid;
+		gap: 0.25rem;
+		padding: 1rem 0;
+		border-bottom: 1px solid rgb(var(--gray-light));
+		text-decoration: none;
+	}
+
+	.post-list span {
+		color: rgb(var(--gray));
+	}
+</style>
