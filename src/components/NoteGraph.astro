@@ -1,4 +1,5 @@
 ---
+import ForceNoteGraph from './ForceNoteGraph';
 import type { NoteGraph } from '../lib/noteGraph';
 
 type Props = {
@@ -6,76 +7,14 @@ type Props = {
 };
 
 const { graph } = Astro.props;
-const radius = 78;
-const center = 100;
-const activeNode = graph.nodes.find((node) => node.active);
-const relatedNodes = graph.nodes.filter((node) => !node.active);
-const positionedNodes = [
-	...(activeNode ? [{ ...activeNode, x: center, y: center }] : []),
-	...relatedNodes.map((node, index) => {
-		const angle = (Math.PI * 2 * index) / Math.max(relatedNodes.length, 1) - Math.PI / 2;
-		return {
-			...node,
-			x: center + Math.cos(angle) * radius,
-			y: center + Math.sin(angle) * radius,
-		};
-	}),
-];
-const nodePositions = new Map(positionedNodes.map((node) => [node.id, node]));
 ---
 
 <aside class="note-graph" aria-label="笔记关系图谱">
-	<h2>关系图谱</h2>
-	{
-		graph.nodes.length > 1 ? (
-			<svg viewBox="0 0 200 200" role="img" aria-label="当前笔记和已发布关联笔记">
-				{graph.edges.map((edge) => {
-					const from = nodePositions.get(edge.from);
-					const to = nodePositions.get(edge.to);
-					if (!from || !to) return null;
-					return <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} />;
-				})}
-				{positionedNodes.map((node) => (
-					<a href={node.url}>
-						<circle cx={node.x} cy={node.y} r={node.active ? 12 : 8} class:list={{ active: node.active }} />
-						<title>{node.title}</title>
-					</a>
-				))}
-			</svg>
-		) : (
-			<p class="empty">暂无已发布关联笔记</p>
-		)
-	}
-
-	<section>
-		<h3>出链</h3>
-		{
-			graph.outgoing.length ? (
-				<ul>
-					{graph.outgoing.map((node) => (
-						<li><a href={node.url}>{node.title}</a></li>
-					))}
-				</ul>
-			) : (
-				<p class="empty">暂无</p>
-			)
-		}
-	</section>
-
-	<section>
-		<h3>反链</h3>
-		{
-			graph.backlinks.length ? (
-				<ul>
-					{graph.backlinks.map((node) => (
-						<li><a href={node.url}>{node.title}</a></li>
-					))}
-				</ul>
-			) : (
-				<p class="empty">暂无</p>
-			)
-		}
-	</section>
+	<div class="graph-head">
+		<h2>关系图谱</h2>
+		<span>{graph.nodes.length} nodes</span>
+	</div>
+	<ForceNoteGraph graph={graph} client:load />
 </aside>
 
 <style>
@@ -83,78 +22,87 @@ const nodePositions = new Map(positionedNodes.map((node) => [node.id, node]));
 		position: sticky;
 		top: 5rem;
 		align-self: start;
-		padding: 1rem;
-		border: 1px solid rgb(var(--gray-light));
+		padding: 0.85rem;
+		border: 1px solid rgba(var(--black), 0.08);
 		border-radius: 8px;
-		background: white;
+		background: rgba(255, 255, 255, 0.9);
+		box-shadow: 0 18px 48px rgba(var(--gray), 15%);
+		backdrop-filter: blur(16px);
 	}
 
-	h2,
-	h3 {
-		margin: 0;
-		line-height: 1.2;
+	.graph-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 0.65rem;
 	}
 
 	h2 {
-		font-size: 1rem;
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.2;
 	}
 
-	h3 {
-		margin-top: 1rem;
-		font-size: 0.9rem;
+	span {
 		color: rgb(var(--gray));
+		font-size: 0.72rem;
 	}
 
-	svg {
+	:global(.force-note-graph svg) {
 		display: block;
 		width: 100%;
-		aspect-ratio: 1;
-		margin: 0.75rem 0;
+		aspect-ratio: 1.08;
+		border-radius: 8px;
+		background:
+			linear-gradient(90deg, rgba(var(--gray-light), 0.36) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(var(--gray-light), 0.36) 1px, transparent 1px),
+			rgb(var(--paper));
+		background-size: 28px 28px;
 	}
 
-	line {
-		stroke: rgb(var(--gray-light));
-		stroke-width: 1.5;
+	:global(.force-note-graph line) {
+		stroke: rgba(var(--gray), 0.42);
+		stroke-width: 1.1;
 	}
 
-	circle {
-		fill: rgb(var(--accent));
-		opacity: 0.7;
+	:global(.force-note-graph circle) {
+		fill: rgb(var(--gray));
+		opacity: 0.72;
 		transition:
 			opacity 0.2s ease,
 			r 0.2s ease;
 	}
 
-	circle.active {
+	:global(.force-note-graph circle.active) {
 		fill: rgb(var(--black));
 		opacity: 1;
 	}
 
-	a:hover circle {
+	:global(.force-note-graph a:hover circle) {
 		opacity: 1;
 	}
 
-	ul {
+	:global(.force-note-graph ul) {
 		display: grid;
-		gap: 0.5rem;
-		margin: 0.5rem 0 0;
+		gap: 0.38rem;
+		max-height: 170px;
+		margin: 0.75rem 0 0;
 		padding: 0;
 		list-style: none;
+		overflow: auto;
 	}
 
-	li a {
-		color: rgb(var(--black));
-		font-size: 0.9rem;
+	:global(.force-note-graph li a) {
+		display: block;
+		color: rgb(var(--gray-dark));
+		font-size: 0.78rem;
+		line-height: 1.35;
 		text-decoration: none;
 	}
 
-	li a:hover {
-		color: rgb(var(--accent));
-	}
-
-	.empty {
-		margin: 0.5rem 0 0;
-		color: rgb(var(--gray));
-		font-size: 0.9rem;
+	:global(.force-note-graph li.active a) {
+		color: rgb(var(--black));
+		font-weight: 700;
 	}
 </style>

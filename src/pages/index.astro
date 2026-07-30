@@ -23,31 +23,15 @@ const featuredTag = tags[0]?.name ?? '';
 	<body>
 		<Header />
 		<main>
-			<section class="hero">
-				<p class="eyebrow">Markdown notes to personal blog</p>
-				<h1>ZiYyun Blog</h1>
-				<p>
-					这里会从 Obsidian 仓库读取发布视图，把带有 <code>#blog</code> 的 Markdown 笔记同步成静态博客。
-				</p>
-				<div class="actions">
-					<a href={`${baseUrl}blog/`}>查看笔记</a>
-					<NoteStatus count={posts.length} client:load />
-				</div>
-			</section>
-
-			<section class="tag-lab" aria-labelledby="tag-lab-title">
-				<div class="section-head">
-					<h2 id="tag-lab-title">标签索引</h2>
-					<p>点击标签查看对应笔记。</p>
-				</div>
-				<div class="tag-stage" data-tag-stage>
+			<section class="home-screen" aria-labelledby="site-title">
+				<div class="tag-field" aria-label="标签星图">
 					{
 						tags.map((tag, index) => (
 							<button
 								type="button"
 								class:list={['tag-bubble', { active: tag.name === featuredTag }]}
 								data-tag={tag.name}
-								style={`--size:${Math.min(56 + tag.count * 12, 108)}px; --delay:${index * -0.7}s; --x:${12 + (index * 17) % 76}%; --y:${18 + (index * 23) % 60}%;`}
+								style={`--size:${Math.min(42 + tag.count * 8, 76)}px; --delay:${index * -0.8}s; --x:${8 + (index * 19) % 84}%; --y:${10 + (index * 29) % 78}%; --tone:${index % 5};`}
 								aria-pressed={tag.name === featuredTag ? 'true' : 'false'}
 							>
 								<span>#{tag.name}</span>
@@ -56,11 +40,28 @@ const featuredTag = tags[0]?.name ?? '';
 						))
 					}
 				</div>
-				<div class="tag-results" data-tag-results>
+
+				<div class="home-panel">
+					<p class="eyebrow">Obsidian notes / Astro blog</p>
+					<h1 id="site-title">ZiYyun Blog</h1>
+					<p>
+						从 Obsidian 发布视图读取笔记，把带有 <code>#blog</code> 的 Markdown 自动同步成静态博客。
+					</p>
+					<div class="actions">
+						<a href={`${baseUrl}blog/`}>查看笔记</a>
+						<NoteStatus count={posts.length} client:load />
+					</div>
+				</div>
+
+				<div class="tag-card" data-tag-results>
+					<div class="tag-card-head">
+						<span>标签筛选</span>
+						<small>点击漂浮标签切换</small>
+					</div>
 					{
 						tags.map((tag) => (
 							<section class:list={['tag-panel', { active: tag.name === featuredTag }]} data-tag-panel={tag.name}>
-								<h3>#{tag.name}</h3>
+								<h2>#{tag.name}</h2>
 								<ul>
 									{tag.posts.map((post) => (
 										<li>
@@ -77,11 +78,14 @@ const featuredTag = tags[0]?.name ?? '';
 				</div>
 			</section>
 
-			<section>
-				<h2>最近笔记</h2>
+			<section class="recent">
+				<div class="section-head">
+					<h2>最近笔记</h2>
+					<a href={`${baseUrl}blog/`}>全部笔记</a>
+				</div>
 				<ul class="post-list">
 					{
-						posts.slice(0, 5).map((post) => (
+						posts.slice(0, 6).map((post) => (
 							<li>
 								<a href={`${baseUrl}blog/${post.id}/`}>
 									<strong>{post.data.title}</strong>
@@ -116,48 +120,92 @@ const featuredTag = tags[0]?.name ?? '';
 </html>
 
 <style>
-	.hero {
-		padding: 4rem 0 3rem;
+	main {
+		width: 100%;
+		max-width: none;
+		padding: 0;
+	}
+
+	.home-screen {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+		gap: 1.25rem;
+		min-height: calc(100vh - 56px);
+		padding: clamp(1rem, 3vw, 2rem);
+		overflow: hidden;
+	}
+
+	.tag-field {
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(90deg, rgba(var(--gray-light), 0.34) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(var(--gray-light), 0.34) 1px, transparent 1px),
+			rgb(var(--paper));
+		background-size: 48px 48px;
+	}
+
+	.home-panel,
+	.tag-card {
+		position: relative;
+		z-index: 1;
+		align-self: end;
+		border: 1px solid rgba(var(--black), 0.08);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.86);
+		box-shadow: 0 24px 80px rgba(var(--gray), 18%);
+		backdrop-filter: blur(18px);
+	}
+
+	.home-panel {
+		max-width: 660px;
+		padding: clamp(1.25rem, 4vw, 2.5rem);
 	}
 
 	.eyebrow {
-		margin-bottom: 0.5rem;
-		color: rgb(var(--accent));
-		font-size: 0.95rem;
+		margin: 0 0 0.5rem;
+		color: rgb(var(--gray));
+		font-size: 0.78rem;
 		font-weight: 700;
+		letter-spacing: 0;
+		text-transform: uppercase;
 	}
 
 	h1 {
-		margin: 0 0 1rem;
-		font-size: clamp(2.25rem, 8vw, 4.25rem);
-		line-height: 1;
+		margin: 0 0 0.9rem;
+		font-size: clamp(2.4rem, 7vw, 5.2rem);
+		line-height: 0.95;
 	}
 
-	.hero p,
-	.section-head p {
-		max-width: 720px;
+	.home-panel p {
+		max-width: 560px;
+		margin: 0;
+		color: rgb(var(--gray-dark));
+		font-size: 0.98rem;
 	}
 
 	.actions {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
-		gap: 1rem;
-		margin-top: 2rem;
+		gap: 0.75rem;
+		margin-top: 1.5rem;
 	}
 
 	.actions a,
 	:global(.note-status) {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		min-height: 44px;
-		padding: 0 1rem;
+		gap: 0.4rem;
+		min-height: 38px;
+		padding: 0 0.85rem;
 		border: 1px solid rgb(var(--black));
 		border-radius: 8px;
 		background: rgb(var(--black));
 		color: white;
 		font: inherit;
+		font-size: 0.9rem;
 		text-decoration: none;
 		cursor: pointer;
 	}
@@ -171,35 +219,6 @@ const featuredTag = tags[0]?.name ?? '';
 		font-weight: 700;
 	}
 
-	.tag-lab {
-		display: grid;
-		gap: 1.5rem;
-		margin: 1rem 0 4rem;
-	}
-
-	.section-head {
-		display: grid;
-		gap: 0.25rem;
-	}
-
-	.section-head h2,
-	.section-head p {
-		margin: 0;
-	}
-
-	.tag-stage {
-		position: relative;
-		min-height: 340px;
-		border: 1px solid rgb(var(--gray-light));
-		border-radius: 8px;
-		background:
-			linear-gradient(90deg, rgba(var(--gray-light), 0.42) 1px, transparent 1px),
-			linear-gradient(0deg, rgba(var(--gray-light), 0.42) 1px, transparent 1px),
-			white;
-		background-size: 42px 42px;
-		overflow: hidden;
-	}
-
 	.tag-bubble {
 		position: absolute;
 		left: var(--x);
@@ -208,16 +227,16 @@ const featuredTag = tags[0]?.name ?? '';
 		place-items: center;
 		width: var(--size);
 		height: var(--size);
-		padding: 0.35rem;
-		border: 1px solid rgba(var(--black), 0.14);
+		padding: 0.28rem;
+		border: 1px solid rgba(var(--black), 0.12);
 		border-radius: 50%;
-		background: white;
+		background: rgba(255, 255, 255, 0.8);
 		color: rgb(var(--black));
-		box-shadow: 0 12px 32px rgba(var(--gray), 22%);
+		box-shadow: 0 14px 34px rgba(var(--gray), 18%);
 		font: inherit;
 		text-align: center;
 		transform: translate(-50%, -50%);
-		animation: drift 8s ease-in-out infinite;
+		animation: drift 10s ease-in-out infinite;
 		animation-delay: var(--delay);
 		cursor: pointer;
 	}
@@ -230,14 +249,14 @@ const featuredTag = tags[0]?.name ?? '';
 
 	.tag-bubble span {
 		max-width: 100%;
-		font-size: clamp(0.66rem, 1.1vw, 0.9rem);
+		font-size: clamp(0.52rem, 0.72vw, 0.72rem);
 		line-height: 1.05;
 		overflow-wrap: anywhere;
 	}
 
 	.tag-bubble small {
-		font-size: 0.7rem;
-		opacity: 0.76;
+		font-size: 0.58rem;
+		opacity: 0.72;
 	}
 
 	@keyframes drift {
@@ -246,12 +265,30 @@ const featuredTag = tags[0]?.name ?? '';
 			transform: translate(-50%, -50%);
 		}
 		50% {
-			transform: translate(calc(-50% + 10px), calc(-50% - 12px));
+			transform: translate(calc(-50% + 16px), calc(-50% - 14px));
 		}
 	}
 
-	.tag-results {
-		min-height: 160px;
+	.tag-card {
+		align-self: stretch;
+		max-height: calc(100vh - 120px);
+		padding: 1rem;
+		overflow: auto;
+	}
+
+	.tag-card-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+		color: rgb(var(--gray));
+		font-size: 0.78rem;
+	}
+
+	.tag-card-head span {
+		color: rgb(var(--black));
+		font-weight: 700;
 	}
 
 	.tag-panel {
@@ -262,14 +299,16 @@ const featuredTag = tags[0]?.name ?? '';
 		display: block;
 	}
 
-	.tag-panel h3 {
-		margin-top: 0;
+	.tag-panel h2 {
+		margin: 0 0 0.75rem;
+		font-size: 1rem;
 	}
 
 	.tag-panel ul,
 	.post-list {
 		display: grid;
-		gap: 1rem;
+		gap: 0.75rem;
+		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
@@ -277,20 +316,57 @@ const featuredTag = tags[0]?.name ?? '';
 	.tag-panel a,
 	.post-list a {
 		display: grid;
-		gap: 0.25rem;
-		padding: 1rem 0;
-		border-bottom: 1px solid rgb(var(--gray-light));
+		gap: 0.2rem;
+		padding: 0.75rem 0;
+		border-bottom: 1px solid rgba(var(--gray-light), 0.9);
 		text-decoration: none;
+	}
+
+	.tag-panel strong,
+	.post-list strong {
+		color: rgb(var(--black));
+		font-size: 0.92rem;
 	}
 
 	.tag-panel span,
 	.post-list span {
 		color: rgb(var(--gray));
+		font-size: 0.82rem;
 	}
 
-	@media (max-width: 720px) {
-		.tag-stage {
-			min-height: 460px;
+	.recent {
+		width: min(960px, calc(100% - 2rem));
+		margin: 0 auto;
+		padding: 3rem 0 4rem;
+	}
+
+	.section-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.section-head h2 {
+		margin: 0;
+		font-size: 1.2rem;
+	}
+
+	.section-head a {
+		font-size: 0.9rem;
+		text-decoration: none;
+	}
+
+	@media (max-width: 860px) {
+		.home-screen {
+			grid-template-columns: 1fr;
+			min-height: auto;
+			padding-top: 55vh;
+		}
+
+		.tag-card {
+			max-height: none;
 		}
 	}
 </style>

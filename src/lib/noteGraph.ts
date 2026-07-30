@@ -17,8 +17,6 @@ export type NoteGraphEdge = {
 export type NoteGraph = {
 	nodes: NoteGraphNode[];
 	edges: NoteGraphEdge[];
-	outgoing: NoteGraphNode[];
-	backlinks: NoteGraphNode[];
 };
 
 function stripMdExtension(value: string) {
@@ -72,21 +70,11 @@ function nodeFromPost(post: BlogPost, current: BlogPost, baseUrl: string): NoteG
 
 export function createNoteGraph(posts: BlogPost[], current: BlogPost, baseUrl: string): NoteGraph {
 	const index = indexPosts(posts);
-	const outgoingPosts = getWikiLinks(current.body)
-		.map((link) => index.get(link))
-		.filter((post): post is BlogPost => Boolean(post));
-	const backlinksPosts = posts.filter((post) => {
-		if (post.id === current.id) return false;
-		return getWikiLinks(post.body).some((link) => index.get(link)?.id === current.id);
-	});
-
-	const relatedPosts = [current, ...outgoingPosts, ...backlinksPosts];
-	const uniquePosts = [...new Map(relatedPosts.map((post) => [post.id, post])).values()].slice(0, 16);
-	const nodes = uniquePosts.map((post) => nodeFromPost(post, current, baseUrl));
+	const nodes = posts.map((post) => nodeFromPost(post, current, baseUrl));
 	const nodeIds = new Set(nodes.map((node) => node.id));
 	const edges: NoteGraphEdge[] = [];
 
-	for (const post of uniquePosts) {
+	for (const post of posts) {
 		for (const link of getWikiLinks(post.body)) {
 			const target = index.get(link);
 			if (target && nodeIds.has(target.id)) {
@@ -98,7 +86,5 @@ export function createNoteGraph(posts: BlogPost[], current: BlogPost, baseUrl: s
 	return {
 		nodes,
 		edges,
-		outgoing: outgoingPosts.map((post) => nodeFromPost(post, current, baseUrl)),
-		backlinks: backlinksPosts.map((post) => nodeFromPost(post, current, baseUrl)),
 	};
 }
