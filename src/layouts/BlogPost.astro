@@ -13,6 +13,9 @@ type Props = CollectionEntry<'blog'>['data'] & {
 };
 
 const { title, description, pubDate, updatedDate, heroImage, graph } = Astro.props;
+const heroImageIsString = typeof heroImage === 'string';
+const heroImageIsPublicUrl = heroImageIsString && (heroImage.startsWith('/') || heroImage.startsWith('http'));
+const heroImageIsImported = heroImage && !heroImageIsString;
 ---
 
 <html lang="zh-CN">
@@ -74,7 +77,8 @@ const { title, description, pubDate, updatedDate, heroImage, graph } = Astro.pro
 		<main>
 			<article>
 				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+					{heroImageIsImported && <Image width={1020} height={510} src={heroImage} alt="" />}
+					{heroImageIsPublicUrl && <img src={heroImage} alt="" />}
 				</div>
 				<div class="article-shell">
 					<div class="prose">

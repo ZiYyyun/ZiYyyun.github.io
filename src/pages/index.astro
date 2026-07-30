@@ -5,11 +5,14 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import NoteStatus from '../components/NoteStatus';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { getTagSummaries } from '../lib/tags';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
 const baseUrl = import.meta.env.BASE_URL;
+const tags = getTagSummaries(posts, baseUrl);
+const featuredTag = tags[0]?.name ?? '';
 ---
 
 <!doctype html>
@@ -22,10 +25,9 @@ const baseUrl = import.meta.env.BASE_URL;
 		<main>
 			<section class="hero">
 				<p class="eyebrow">Markdown notes to personal blog</p>
-				<h1>Hello World, ZiYyun Blog.</h1>
+				<h1>ZiYyun Blog</h1>
 				<p>
-					这里会自动收集仓库里的 Markdown / MDX 笔记，编译成静态博客，并通过 GitHub Pages 发布。
-					先让它跑起来，再把 Obsidian 笔记同步进内容目录。
+					这里会从 Obsidian 仓库读取发布视图，把带有 <code>#blog</code> 的 Markdown 笔记同步成静态博客。
 				</p>
 				<div class="actions">
 					<a href={`${baseUrl}blog/`}>查看笔记</a>
@@ -33,11 +35,53 @@ const baseUrl = import.meta.env.BASE_URL;
 				</div>
 			</section>
 
+			<section class="tag-lab" aria-labelledby="tag-lab-title">
+				<div class="section-head">
+					<h2 id="tag-lab-title">标签索引</h2>
+					<p>点击标签查看对应笔记。</p>
+				</div>
+				<div class="tag-stage" data-tag-stage>
+					{
+						tags.map((tag, index) => (
+							<button
+								type="button"
+								class:list={['tag-bubble', { active: tag.name === featuredTag }]}
+								data-tag={tag.name}
+								style={`--size:${Math.min(56 + tag.count * 12, 108)}px; --delay:${index * -0.7}s; --x:${12 + (index * 17) % 76}%; --y:${18 + (index * 23) % 60}%;`}
+								aria-pressed={tag.name === featuredTag ? 'true' : 'false'}
+							>
+								<span>#{tag.name}</span>
+								<small>{tag.count}</small>
+							</button>
+						))
+					}
+				</div>
+				<div class="tag-results" data-tag-results>
+					{
+						tags.map((tag) => (
+							<section class:list={['tag-panel', { active: tag.name === featuredTag }]} data-tag-panel={tag.name}>
+								<h3>#{tag.name}</h3>
+								<ul>
+									{tag.posts.map((post) => (
+										<li>
+											<a href={post.url}>
+												<strong>{post.title}</strong>
+												<span>{post.description}</span>
+											</a>
+										</li>
+									))}
+								</ul>
+							</section>
+						))
+					}
+				</div>
+			</section>
+
 			<section>
 				<h2>最近笔记</h2>
 				<ul class="post-list">
 					{
-						posts.slice(0, 3).map((post) => (
+						posts.slice(0, 5).map((post) => (
 							<li>
 								<a href={`${baseUrl}blog/${post.id}/`}>
 									<strong>{post.data.title}</strong>
@@ -50,6 +94,24 @@ const baseUrl = import.meta.env.BASE_URL;
 			</section>
 		</main>
 		<Footer />
+		<script>
+			const buttons = document.querySelectorAll('[data-tag]');
+			const panels = document.querySelectorAll('[data-tag-panel]');
+
+			for (const button of buttons) {
+				button.addEventListener('click', () => {
+					const selected = button.getAttribute('data-tag');
+					for (const item of buttons) {
+						const active = item.getAttribute('data-tag') === selected;
+						item.classList.toggle('active', active);
+						item.setAttribute('aria-pressed', String(active));
+					}
+					for (const panel of panels) {
+						panel.classList.toggle('active', panel.getAttribute('data-tag-panel') === selected);
+					}
+				});
+			}
+		</script>
 	</body>
 </html>
 
@@ -71,7 +133,8 @@ const baseUrl = import.meta.env.BASE_URL;
 		line-height: 1;
 	}
 
-	.hero p {
+	.hero p,
+	.section-head p {
 		max-width: 720px;
 	}
 
@@ -108,6 +171,102 @@ const baseUrl = import.meta.env.BASE_URL;
 		font-weight: 700;
 	}
 
+	.tag-lab {
+		display: grid;
+		gap: 1.5rem;
+		margin: 1rem 0 4rem;
+	}
+
+	.section-head {
+		display: grid;
+		gap: 0.25rem;
+	}
+
+	.section-head h2,
+	.section-head p {
+		margin: 0;
+	}
+
+	.tag-stage {
+		position: relative;
+		min-height: 340px;
+		border: 1px solid rgb(var(--gray-light));
+		border-radius: 8px;
+		background:
+			linear-gradient(90deg, rgba(var(--gray-light), 0.42) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(var(--gray-light), 0.42) 1px, transparent 1px),
+			white;
+		background-size: 42px 42px;
+		overflow: hidden;
+	}
+
+	.tag-bubble {
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		display: grid;
+		place-items: center;
+		width: var(--size);
+		height: var(--size);
+		padding: 0.35rem;
+		border: 1px solid rgba(var(--black), 0.14);
+		border-radius: 50%;
+		background: white;
+		color: rgb(var(--black));
+		box-shadow: 0 12px 32px rgba(var(--gray), 22%);
+		font: inherit;
+		text-align: center;
+		transform: translate(-50%, -50%);
+		animation: drift 8s ease-in-out infinite;
+		animation-delay: var(--delay);
+		cursor: pointer;
+	}
+
+	.tag-bubble.active {
+		border-color: rgb(var(--black));
+		background: rgb(var(--black));
+		color: white;
+	}
+
+	.tag-bubble span {
+		max-width: 100%;
+		font-size: clamp(0.66rem, 1.1vw, 0.9rem);
+		line-height: 1.05;
+		overflow-wrap: anywhere;
+	}
+
+	.tag-bubble small {
+		font-size: 0.7rem;
+		opacity: 0.76;
+	}
+
+	@keyframes drift {
+		0%,
+		100% {
+			transform: translate(-50%, -50%);
+		}
+		50% {
+			transform: translate(calc(-50% + 10px), calc(-50% - 12px));
+		}
+	}
+
+	.tag-results {
+		min-height: 160px;
+	}
+
+	.tag-panel {
+		display: none;
+	}
+
+	.tag-panel.active {
+		display: block;
+	}
+
+	.tag-panel h3 {
+		margin-top: 0;
+	}
+
+	.tag-panel ul,
 	.post-list {
 		display: grid;
 		gap: 1rem;
@@ -115,6 +274,7 @@ const baseUrl = import.meta.env.BASE_URL;
 		list-style: none;
 	}
 
+	.tag-panel a,
 	.post-list a {
 		display: grid;
 		gap: 0.25rem;
@@ -123,7 +283,14 @@ const baseUrl = import.meta.env.BASE_URL;
 		text-decoration: none;
 	}
 
+	.tag-panel span,
 	.post-list span {
 		color: rgb(var(--gray));
+	}
+
+	@media (max-width: 720px) {
+		.tag-stage {
+			min-height: 460px;
+		}
 	}
 </style>

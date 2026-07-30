@@ -96,9 +96,13 @@ const baseUrl = import.meta.env.BASE_URL;
 						posts.map((post) => (
 							<li>
 								<a href={`${baseUrl}blog/${post.id}/`}>
-									{post.data.heroImage && (
+									{post.data.heroImage && typeof post.data.heroImage !== 'string' && (
 										<Image width={720} height={360} src={post.data.heroImage} alt="" />
 									)}
+									{typeof post.data.heroImage === 'string' &&
+										(post.data.heroImage.startsWith('/') || post.data.heroImage.startsWith('http')) && (
+											<img src={post.data.heroImage} alt="" />
+										)}
 									<h4 class="title">{post.data.title}</h4>
 									<p class="date">
 										<FormattedDate date={post.data.pubDate} />
