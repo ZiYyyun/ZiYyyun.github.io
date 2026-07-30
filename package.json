@@ -7,7 +7,8 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "sync:notes": "node scripts/sync-obsidian-notes.mjs",
+    "build": "npm run sync:notes && astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
