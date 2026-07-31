@@ -8,10 +8,10 @@
 2. 在 Obsidian 仓库中新建或更新 `Blog_Pages.base`。
 3. 给要发布的笔记添加 `#blog` 标签。
 4. 提交并推送博客仓库的 `main` 分支。
-5. 构建时执行 `npm run sync:notes`，从 Obsidian 仓库同步清单里的笔记。
+5. 构建时执行 `npm run sync:notes`，从 Obsidian 仓库同步发布笔记。
 6. GitHub Actions 自动构建并发布到 GitHub Pages。
 
-## 发布清单格式
+## 发布视图
 
 推荐在 Obsidian vault 中创建 `Blog_Pages.base`：
 
