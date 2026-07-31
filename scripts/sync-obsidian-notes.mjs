@@ -212,7 +212,18 @@ function yamlQuote(value) {
 	return `'${value.replaceAll("'", "''")}'`;
 }
 
-function getFileDate(file) {
+function getFileDate(file, vaultPath) {
+	try {
+		const relativePath = normalizePath(relative(vaultPath, file));
+		const output = execFileSync('git', ['-C', vaultPath, 'log', '-1', '--format=%cs', '--', relativePath], {
+			encoding: 'utf8',
+		}).trim();
+
+		if (output) return output;
+	} catch {
+		// Fall back to the filesystem timestamp when the vault is not a git checkout.
+	}
+
 	return statSync(file).mtime.toISOString().slice(0, 10);
 }
 
@@ -270,7 +281,7 @@ function toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLink
 	if (!hasFrontmatterField(frontmatter, 'description')) {
 		generatedFields.push(`description: ${yamlQuote(`Obsidian note: ${title}`)}`);
 	}
-	if (!hasFrontmatterField(frontmatter, 'pubDate')) generatedFields.push(`pubDate: '${getFileDate(file)}'`);
+	if (!hasFrontmatterField(frontmatter, 'pubDate')) generatedFields.push(`pubDate: '${getFileDate(file, vaultPath)}'`);
 	generatedFields.push(`sourcePath: ${yamlQuote(relativePath)}`);
 
 	const mergedFrontmatter = [frontmatter, ...generatedFields].filter(Boolean).join('\n');
