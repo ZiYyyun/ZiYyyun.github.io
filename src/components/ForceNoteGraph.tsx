@@ -34,8 +34,8 @@ export default function ForceNoteGraph({ graph }: Props) {
 	useEffect(() => {
 		const nextNodes: SimNode[] = graph.nodes.map((node, index) => ({
 			...node,
-			x: width / 2 + Math.cos(index) * 32,
-			y: height / 2 + Math.sin(index) * 32,
+			x: width / 2 + Math.cos(index * 1.7) * 42,
+			y: height / 2 + Math.sin(index * 1.7) * 36,
 		}));
 		const nextLinks: SimLink[] = graph.edges.map((edge) => ({ source: edge.from, target: edge.to }));
 
@@ -45,10 +45,10 @@ export default function ForceNoteGraph({ graph }: Props) {
 				'link',
 				forceLink<SimNode, SimLink>(nextLinks)
 					.id((node) => node.id)
-					.distance(72)
-					.strength(0.55),
+					.distance(74)
+					.strength(0.5),
 			)
-			.force('charge', forceManyBody().strength(-210))
+			.force('charge', forceManyBody().strength(-220))
 			.force('collide', forceCollide<SimNode>().radius((node) => (node.active ? 24 : 18)))
 			.force('center', forceCenter(width / 2, height / 2))
 			.alpha(0.95)

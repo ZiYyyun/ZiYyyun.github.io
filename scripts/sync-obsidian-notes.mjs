@@ -11,6 +11,7 @@ import {
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import iconv from 'iconv-lite';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoUrl = process.env.OBSIDIAN_REPO_URL ?? 'https://github.com/ZiYyyun/ZiYyun-ObsidianUnivrse.git';
@@ -24,6 +25,26 @@ const dryRun = process.env.OBSIDIAN_SYNC_DRY_RUN === '1';
 
 function run(command, args, options = {}) {
 	execFileSync(command, args, { stdio: 'inherit', ...options });
+}
+
+function mojibakeScore(value) {
+	const matches = value.match(/[锛涓鐨瀵绋搷馃銆庝佷]/g);
+	return matches ? matches.length : 0;
+}
+
+function repairMojibake(value) {
+	const score = mojibakeScore(value);
+	if (score < 4) return value;
+
+	const repaired = iconv.decode(iconv.encode(value, 'gb18030'), 'utf8');
+	const repairedScore = mojibakeScore(repaired);
+	const usefulCjk = repaired.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
+
+	return repairedScore < score / 3 && usefulCjk > 0 ? repaired : value;
+}
+
+function readMarkdownText(file) {
+	return repairMojibake(readFileSync(file, 'utf8'));
 }
 
 function getVaultPath() {
@@ -84,7 +105,7 @@ function parseBaseTags(content) {
 }
 
 function fileHasTag(file, tag) {
-	const content = readFileSync(file, 'utf8');
+	const content = readMarkdownText(file);
 	const bareTag = tag.replace(/^#/, '');
 	const escaped = bareTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	const tagPattern = new RegExp(`(^|\\s)#${escaped}(?=\\s|$)`, 'm');
@@ -212,6 +233,10 @@ function yamlQuote(value) {
 	return `'${value.replaceAll("'", "''")}'`;
 }
 
+function yamlStringList(values) {
+	return `[${values.map((value) => yamlQuote(value)).join(', ')}]`;
+}
+
 function getFileDate(file, vaultPath) {
 	try {
 		const relativePath = normalizePath(relative(vaultPath, file));
@@ -249,7 +274,7 @@ function buildPublishedLinkIndex(files, vaultPath) {
 function transformObsidianBody(body, assetIndex, copiedAssets, publishedLinks) {
 	return body
 		.split(/\r?\n/)
-		.filter((line) => line.trim() !== '#blog')
+		.filter((line) => !isTagOnlyLine(line))
 		.join('\n')
 		.replace(/!\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]/g, (_match, target) => {
 			const asset = resolveAsset(target, assetIndex);
@@ -270,8 +295,32 @@ function transformObsidianBody(body, assetIndex, copiedAssets, publishedLinks) {
 		});
 }
 
+function isTagOnlyLine(line) {
+	return /^#[\p{Letter}\p{Number}_/-]+(?:\s+#[\p{Letter}\p{Number}_/-]+)*$/u.test(line.trim());
+}
+
+function extractObsidianTags(body) {
+	const tags = new Set();
+	let inFence = false;
+
+	for (const line of body.split(/\r?\n/)) {
+		if (line.trim().startsWith('```')) {
+			inFence = !inFence;
+			continue;
+		}
+		if (inFence || !isTagOnlyLine(line)) continue;
+
+		for (const match of line.trim().matchAll(/#([\p{Letter}\p{Number}_/-]+)/gu)) {
+			const tag = match[1].trim();
+			if (tag && tag.toLowerCase() !== 'blog') tags.add(tag);
+		}
+	}
+
+	return [...tags];
+}
+
 function toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLinks) {
-	const original = readFileSync(file, 'utf8');
+	const original = readMarkdownText(file);
 	const { frontmatter, body } = parseFrontmatter(original);
 	const relativePath = normalizePath(relative(vaultPath, file));
 	const title = stripMdExtension(basename(file));
@@ -283,6 +332,10 @@ function toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLink
 	}
 	if (!hasFrontmatterField(frontmatter, 'pubDate')) generatedFields.push(`pubDate: '${getFileDate(file, vaultPath)}'`);
 	generatedFields.push(`sourcePath: ${yamlQuote(relativePath)}`);
+	const tags = extractObsidianTags(body);
+	if (tags.length > 0 && !hasFrontmatterField(frontmatter, 'tags')) {
+		generatedFields.push(`tags: ${yamlStringList(tags)}`);
+	}
 
 	const mergedFrontmatter = [frontmatter, ...generatedFields].filter(Boolean).join('\n');
 	const transformedBody = transformObsidianBody(body, assetIndex, copiedAssets, publishedLinks);
@@ -300,7 +353,7 @@ function syncNotes() {
 		return;
 	}
 
-	const manifestContent = readFileSync(manifest, 'utf8');
+	const manifestContent = readMarkdownText(manifest);
 	const baseTags = parseBaseTags(manifestContent);
 	const entries = parseManifest(manifestContent);
 	if (entries.length === 0 && baseTags.length === 0) {

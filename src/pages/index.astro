@@ -1,7 +1,7 @@
 ---
 import { Code, Mail, MessageCircle, Rss } from '@lucide/astro';
 import { getCollection } from 'astro:content';
-import BackgroundImage from '../assets/blog-placeholder-about.jpg';
+import BackgroundImage from '../assets/blog-placeholder-4.jpg';
 import BaseHead from '../components/BaseHead.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { getTagSummaries } from '../lib/tags';
@@ -9,6 +9,11 @@ import { getTagSummaries } from '../lib/tags';
 const posts = await getCollection('blog');
 const baseUrl = import.meta.env.BASE_URL;
 const tags = getTagSummaries(posts, baseUrl);
+
+function getShortTagName(name: string) {
+	const parts = name.split(/[\\/]/).filter(Boolean);
+	return parts.at(-1) ?? name;
+}
 ---
 
 <!doctype html>
@@ -20,26 +25,33 @@ const tags = getTagSummaries(posts, baseUrl);
 		<main class="home" style={`--home-bg: url(${BackgroundImage.src});`}>
 			<div class="tag-field" aria-label="笔记标签">
 				{
-					tags.map((tag, index) => (
-						<a
-							class="tag-bubble"
-							href={`${baseUrl}tags/${tag.slug}/`}
-							style={`--size:${Math.min(38 + tag.count * 7, 72)}px; --delay:${index * -0.75}s; --x:${7 + (index * 19) % 86}%; --y:${8 + (index * 31) % 84}%;`}
-							aria-label={`查看 ${tag.name} 标签下的笔记`}
-						>
-							<span>#{tag.name}</span>
-						</a>
-					))
+					tags.map((tag, index) => {
+						const label = getShortTagName(tag.name);
+						return (
+							<a
+								class="tag-bubble"
+								href={`${baseUrl}tags/${tag.slug}/`}
+								style={`--size:${Math.min(42 + tag.count * 7, 78)}px; --delay:${index * -0.82}s; --x:${6 + (index * 23) % 88}%; --y:${7 + (index * 37) % 86}%; --float:${12 + (index % 5) * 4}px;`}
+								aria-label={`查看 ${tag.name} 标签下的笔记`}
+								title={`#${tag.name}`}
+							>
+								<span>#{label}</span>
+							</a>
+						);
+					})
 				}
 			</div>
 
-			<h1>Welcome</h1>
+			<section class="welcome" aria-label="Welcome">
+				<p>ZiYyun's Notebook</p>
+				<h1>Welcome</h1>
+			</section>
 
-			<div class="bio">
+			<section class="bio" aria-label="Profile">
 				<p class="name">ZiYyun</p>
-				<p class="motto">嵌入式、代码与长期笔记。</p>
+				<p class="motto">沉入长期笔记，把代码、系统和日常思考慢慢写清楚。</p>
 				<div class="links" aria-label="个人链接">
-					<a href="https://github.com/ZiYyyun" target="_blank" aria-label="GitHub">
+					<a href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
 						<Code size={18} />
 					</a>
 					<a href="mailto:1583931339@qq.com" aria-label="Email">
@@ -52,7 +64,7 @@ const tags = getTagSummaries(posts, baseUrl);
 						<MessageCircle size={18} />
 					</a>
 				</div>
-			</div>
+			</section>
 		</main>
 	</body>
 </html>
@@ -60,6 +72,7 @@ const tags = getTagSummaries(posts, baseUrl);
 <style>
 	body {
 		overflow: hidden;
+		background: #11151b;
 	}
 
 	.home {
@@ -71,22 +84,61 @@ const tags = getTagSummaries(posts, baseUrl);
 		padding: 0;
 		overflow: hidden;
 		background:
-			linear-gradient(90deg, rgba(250, 251, 252, 0.84), rgba(250, 251, 252, 0.45)),
+			linear-gradient(115deg, rgba(15, 18, 23, 0.92), rgba(15, 18, 23, 0.46) 52%, rgba(245, 242, 233, 0.2)),
 			var(--home-bg) center / cover no-repeat;
+		isolation: isolate;
 	}
 
-	.home h1 {
+	.home::before {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+		background-size: 72px 72px;
+		mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 76%);
+		content: '';
+	}
+
+	.home::after {
+		position: absolute;
+		inset: auto 0 0;
+		height: 34vh;
+		background: linear-gradient(0deg, rgba(12, 14, 18, 0.76), transparent);
+		content: '';
+		pointer-events: none;
+	}
+
+	.welcome {
 		position: absolute;
 		left: 50%;
-		top: 49%;
+		top: 48%;
 		z-index: 1;
-		margin: 0;
-		color: rgba(var(--black), 0.86);
-		font-size: clamp(3.5rem, 13vw, 11rem);
-		font-weight: 700;
-		line-height: 0.9;
+		display: grid;
+		gap: 0.45rem;
+		width: min(900px, calc(100% - 2rem));
+		color: white;
+		text-align: center;
 		transform: translate(-50%, -50%);
 		pointer-events: none;
+	}
+
+	.welcome p {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.68);
+		font-size: clamp(0.72rem, 1.4vw, 0.9rem);
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.welcome h1 {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.92);
+		font-size: clamp(4rem, 13vw, 12rem);
+		font-weight: 700;
+		line-height: 0.86;
+		text-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
 	}
 
 	.tag-field {
@@ -104,29 +156,40 @@ const tags = getTagSummaries(posts, baseUrl);
 		width: var(--size);
 		height: var(--size);
 		padding: 0.25rem;
-		border: 1px solid rgba(var(--black), 0.12);
+		border: 1px solid rgba(255, 255, 255, 0.28);
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.62);
-		color: rgb(var(--black));
-		box-shadow: 0 16px 42px rgba(var(--gray), 18%);
+		background: rgba(255, 255, 255, 0.12);
+		color: rgba(255, 255, 255, 0.86);
+		box-shadow: 0 18px 58px rgba(0, 0, 0, 0.26);
 		text-align: center;
 		text-decoration: none;
-		backdrop-filter: blur(12px);
+		backdrop-filter: blur(16px);
 		transform: translate(-50%, -50%);
-		animation: drift 11s ease-in-out infinite;
+		animation: drift 12s ease-in-out infinite;
 		animation-delay: var(--delay);
+	}
+
+	.tag-bubble:nth-child(3n) {
+		border-color: rgba(191, 101, 66, 0.46);
+		background: rgba(191, 101, 66, 0.16);
+	}
+
+	.tag-bubble:nth-child(4n) {
+		border-color: rgba(102, 87, 168, 0.42);
+		background: rgba(102, 87, 168, 0.15);
 	}
 
 	.tag-bubble span {
 		max-width: 100%;
-		font-size: clamp(0.48rem, 0.68vw, 0.68rem);
-		line-height: 1.08;
+		font-size: clamp(0.52rem, 0.7vw, 0.7rem);
+		line-height: 1.16;
 		overflow-wrap: anywhere;
 	}
 
 	.tag-bubble:hover {
-		background: rgba(var(--black), 0.9);
-		color: white;
+		background: rgba(255, 255, 255, 0.88);
+		color: rgb(var(--black));
+		transform: translate(-50%, -50%) scale(1.08);
 	}
 
 	.bio {
@@ -134,13 +197,9 @@ const tags = getTagSummaries(posts, baseUrl);
 		left: clamp(1rem, 4vw, 3rem);
 		bottom: clamp(1rem, 4vw, 3rem);
 		z-index: 3;
-		width: min(360px, calc(100% - 2rem));
-		padding: 1rem;
-		border: 1px solid rgba(var(--black), 0.1);
-		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.68);
-		box-shadow: 0 18px 56px rgba(var(--gray), 18%);
-		backdrop-filter: blur(18px);
+		width: min(380px, calc(100% - 2rem));
+		padding: 0;
+		color: white;
 	}
 
 	.name,
@@ -149,37 +208,39 @@ const tags = getTagSummaries(posts, baseUrl);
 	}
 
 	.name {
-		color: rgb(var(--black));
 		font-size: 1.05rem;
 		font-weight: 700;
 	}
 
 	.motto {
-		margin-top: 0.25rem;
-		color: rgb(var(--gray-dark));
-		font-size: 0.86rem;
+		max-width: 330px;
+		margin-top: 0.38rem;
+		color: rgba(255, 255, 255, 0.72);
+		font-size: 0.88rem;
+		line-height: 1.72;
 	}
 
 	.links {
 		display: flex;
-		gap: 0.5rem;
-		margin-top: 0.9rem;
+		gap: 0.55rem;
+		margin-top: 1rem;
 	}
 
 	.links a {
 		display: inline-grid;
 		place-items: center;
-		width: 34px;
-		height: 34px;
-		border: 1px solid rgba(var(--black), 0.12);
+		width: 36px;
+		height: 36px;
+		border: 1px solid rgba(255, 255, 255, 0.24);
 		border-radius: 50%;
-		background: white;
-		color: rgb(var(--black));
+		background: rgba(255, 255, 255, 0.11);
+		color: white;
+		backdrop-filter: blur(14px);
 	}
 
 	.links a:hover {
-		background: rgb(var(--black));
-		color: white;
+		background: rgba(255, 255, 255, 0.88);
+		color: rgb(var(--black));
 	}
 
 	@keyframes drift {
@@ -188,7 +249,7 @@ const tags = getTagSummaries(posts, baseUrl);
 			transform: translate(-50%, -50%);
 		}
 		50% {
-			transform: translate(calc(-50% + 18px), calc(-50% - 16px));
+			transform: translate(calc(-50% + var(--float)), calc(-50% - var(--float)));
 		}
 	}
 
@@ -199,6 +260,10 @@ const tags = getTagSummaries(posts, baseUrl);
 
 		.home {
 			min-height: 100vh;
+		}
+
+		.tag-bubble {
+			opacity: 0.9;
 		}
 	}
 </style>

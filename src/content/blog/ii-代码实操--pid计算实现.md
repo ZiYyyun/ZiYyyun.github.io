@@ -1,11 +1,11 @@
 ---
 title: 'PID计算实现'
 description: 'Obsidian note: PID计算实现'
-pubDate: '2026-07-30'
+pubDate: '2026-07-31'
 sourcePath: 'II_代码实操/PID计算实现.md'
+tags: ['实操/开发']
 ---
 
-#实操/开发 
 PID的主要输入参数就是`current_speed`和`target_speed`，因为我们要将电机加速到目标速度，然而电机的加速需要`pulse(频率)`来控制，PID公式就是用来输出这个的
 
 ---

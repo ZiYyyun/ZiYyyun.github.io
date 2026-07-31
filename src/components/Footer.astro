@@ -2,12 +2,24 @@
 const today = new Date();
 ---
 
-<footer>&copy; {today.getFullYear()} ZiYyun. Built with Astro.</footer>
+<footer>
+	<span>&copy; {today.getFullYear()} ZiYyun</span>
+	<span>Built with Astro</span>
+</footer>
+
 <style>
 	footer {
-		padding: 2em 1em 6em 1em;
-		background: linear-gradient(var(--gray-gradient)) no-repeat;
+		display: flex;
+		justify-content: center;
+		gap: 0.75rem;
+		padding: 3rem 1rem 4rem;
 		color: rgb(var(--gray));
-		text-align: center;
+		font-size: 0.82rem;
+	}
+
+	span + span::before {
+		content: '/';
+		margin-right: 0.75rem;
+		color: rgba(var(--gray), 0.55);
 	}
 </style>

@@ -1,12 +1,11 @@
 ---
 title: 'IC-ES8311'
 description: 'Obsidian note: IC-ES8311'
-pubDate: '2026-07-30'
+pubDate: '2026-07-31'
 sourcePath: 'II_代码实操/IC-ES8311.md'
+tags: ['IC', 'esp32']
 ---
 
-#IC 
-#esp32 
 对于esp32来讲，我们驱动ES8311需要使用[espressif/esp_codec_dev](https://components.espressif.com/components/espressif/esp_codec_dev/versions/1.5.11/readme)组件来实现
 
 ---

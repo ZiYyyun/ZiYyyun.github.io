@@ -1,11 +1,11 @@
 ---
 title: 'IMX6ULL-汇编LED实验'
 description: 'Obsidian note: IMX6ULL-汇编LED实验'
-pubDate: '2026-07-30'
+pubDate: '2026-07-31'
 sourcePath: 'II_代码实操/IMX6ULL-汇编LED实验.md'
+tags: ['实操/开发/嵌入式/LINUX']
 ---
 
-#实操/开发/嵌入式/LINUX 
 ### STM32 GPIO回顾
 > 在学习 I.MX6U的 GPIO 之前，我们先来回顾一下 STM32 的 GPIO 初始化
 ```c

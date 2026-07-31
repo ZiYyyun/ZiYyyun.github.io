@@ -51,7 +51,9 @@ export function getTagSummaries(posts: BlogPost[], baseUrl: string): TagSummary[
 	const tagMap = new Map<string, TagSummary>();
 
 	for (const post of posts) {
-		for (const tag of extractTags(post.body)) {
+		const tags = post.data.tags?.length ? post.data.tags : extractTags(post.body);
+
+		for (const tag of tags) {
 			const summary = tagMap.get(tag) ?? { name: tag, slug: tagSlug(tag), count: 0, posts: [] };
 			summary.count += 1;
 			summary.posts.push({

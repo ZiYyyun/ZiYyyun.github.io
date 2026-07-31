@@ -22,12 +22,12 @@ const { graph } = Astro.props;
 		position: sticky;
 		top: 5rem;
 		align-self: start;
-		padding: 0.85rem;
-		border: 1px solid rgba(var(--black), 0.08);
+		border: 1px solid rgba(var(--black), 0.07);
 		border-radius: 8px;
-		background: rgba(255, 255, 255, 0.9);
-		box-shadow: 0 18px 48px rgba(var(--gray), 15%);
-		backdrop-filter: blur(16px);
+		background: rgba(var(--surface), 0.84);
+		box-shadow: 0 18px 46px rgba(24, 30, 38, 0.07);
+		padding: 0.9rem;
+		backdrop-filter: blur(18px);
 	}
 
 	.graph-head {
@@ -35,13 +35,12 @@ const { graph } = Astro.props;
 		align-items: baseline;
 		justify-content: space-between;
 		gap: 1rem;
-		margin-bottom: 0.65rem;
+		margin-bottom: 0.75rem;
 	}
 
 	h2 {
 		margin: 0;
-		font-size: 0.95rem;
-		line-height: 1.2;
+		font-size: 0.92rem;
 	}
 
 	span {
@@ -52,30 +51,30 @@ const { graph } = Astro.props;
 	:global(.force-note-graph svg) {
 		display: block;
 		width: 100%;
-		aspect-ratio: 1.08;
+		aspect-ratio: 1.06;
+		border: 1px solid rgba(var(--black), 0.06);
 		border-radius: 8px;
 		background:
-			linear-gradient(90deg, rgba(var(--gray-light), 0.36) 1px, transparent 1px),
-			linear-gradient(0deg, rgba(var(--gray-light), 0.36) 1px, transparent 1px),
+			radial-gradient(circle at 50% 40%, rgba(47, 111, 115, 0.1), transparent 56%),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(var(--paper), 0.62)),
 			rgb(var(--paper));
-		background-size: 28px 28px;
 	}
 
 	:global(.force-note-graph line) {
-		stroke: rgba(var(--gray), 0.42);
-		stroke-width: 1.1;
+		stroke: rgba(47, 111, 115, 0.34);
+		stroke-width: 1.05;
 	}
 
 	:global(.force-note-graph circle) {
-		fill: rgb(var(--gray));
-		opacity: 0.72;
+		fill: var(--accent);
+		opacity: 0.68;
 		transition:
 			opacity 0.2s ease,
 			r 0.2s ease;
 	}
 
 	:global(.force-note-graph circle.active) {
-		fill: rgb(var(--black));
+		fill: var(--accent-warm);
 		opacity: 1;
 	}
 
@@ -85,8 +84,8 @@ const { graph } = Astro.props;
 
 	:global(.force-note-graph ul) {
 		display: grid;
-		gap: 0.38rem;
-		max-height: 170px;
+		gap: 0.36rem;
+		max-height: 160px;
 		margin: 0.75rem 0 0;
 		padding: 0;
 		list-style: none;
@@ -96,13 +95,19 @@ const { graph } = Astro.props;
 	:global(.force-note-graph li a) {
 		display: block;
 		color: rgb(var(--gray-dark));
-		font-size: 0.78rem;
-		line-height: 1.35;
+		font-size: 0.76rem;
+		line-height: 1.38;
 		text-decoration: none;
 	}
 
 	:global(.force-note-graph li.active a) {
 		color: rgb(var(--black));
 		font-weight: 700;
+	}
+
+	@media (max-width: 860px) {
+		.note-graph {
+			position: static;
+		}
 	}
 </style>

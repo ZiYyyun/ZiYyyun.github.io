@@ -3,6 +3,7 @@
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig, fontProviders } from 'astro/config';
+import expressiveCode from 'astro-expressive-code';
 
 import react from '@astrojs/react';
 
@@ -14,7 +15,20 @@ const isProjectPage = githubRepo && !githubRepo.endsWith('.github.io');
 export default defineConfig({
     site: process.env.SITE_URL ?? (githubOwner ? `https://${githubOwner}.github.io` : 'http://localhost:4321'),
     base: process.env.BASE_PATH ?? (isProjectPage ? `/${githubRepo}` : undefined),
-    integrations: [mdx(), sitemap(), react()],
+    integrations: [
+        expressiveCode({
+            themes: ['github-light'],
+            styleOverrides: {
+                borderRadius: '8px',
+                frames: {
+                    shadowColor: 'transparent',
+                },
+            },
+        }),
+        mdx(),
+        sitemap(),
+        react(),
+    ],
     fonts: [
         {
             provider: fontProviders.local(),

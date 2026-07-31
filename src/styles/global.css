@@ -4,139 +4,183 @@
 @import '@fontsource/jetbrains-mono/400.css';
 
 :root {
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--paper: 250, 251, 252;
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+	--black: 23, 25, 30;
+	--gray-dark: 52, 58, 68;
+	--gray: 109, 119, 134;
+	--gray-light: 224, 228, 234;
+	--paper: 246, 244, 238;
+	--surface: 255, 255, 252;
+	--ink: #17191e;
+	--accent: #1d6f74;
+	--accent-strong: #114448;
+	--accent-warm: #bf6542;
+	--accent-violet: #6657a8;
+	--line: rgba(var(--black), 0.1);
+	--soft-shadow: 0 18px 54px rgba(20, 24, 31, 0.08);
+	--lift-shadow: 0 28px 80px rgba(20, 24, 31, 0.12);
 }
-body {
-	font-family: 'Noto Sans SC', var(--font-atkinson), system-ui, sans-serif;
-	margin: 0;
-	padding: 0;
-	text-align: left;
+
+* {
+	box-sizing: border-box;
+}
+
+html {
 	background: rgb(var(--paper));
-	background-size: 100% 600px;
+	text-rendering: optimizeLegibility;
+}
+
+body {
+	min-height: 100vh;
+	margin: 0;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 252, 0.88), rgba(var(--paper), 1) 460px),
+		radial-gradient(circle at 12% 0%, rgba(191, 101, 66, 0.1), transparent 36rem),
+		radial-gradient(circle at 90% 12%, rgba(29, 111, 116, 0.1), transparent 34rem),
+		rgb(var(--paper));
+	color: rgb(var(--gray-dark));
+	font-family: 'Noto Sans SC', var(--font-atkinson), system-ui, sans-serif;
+	font-size: 16px;
+	line-height: 1.72;
+	text-align: left;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
-	font-size: 17px;
-	line-height: 1.72;
 }
+
 main {
-	width: 720px;
-	max-width: calc(100% - 2em);
+	width: min(1080px, calc(100% - 2rem));
 	margin: auto;
-	padding: 3em 1em;
+	padding: 3rem 0;
 }
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-	margin: 0 0 0.5rem 0;
+	margin: 0 0 0.75rem;
 	color: rgb(var(--black));
-	line-height: 1.2;
+	font-weight: 700;
+	line-height: 1.18;
+	letter-spacing: 0;
 }
+
 h1 {
-	font-size: 2.6em;
+	font-size: clamp(2.2rem, 6vw, 4.6rem);
 }
+
 h2 {
-	font-size: 1.8em;
+	font-size: clamp(1.45rem, 3vw, 2.15rem);
 }
+
 h3 {
-	font-size: 1.35em;
+	font-size: 1.28rem;
 }
+
 h4 {
-	font-size: 1.1em;
+	font-size: 1.05rem;
 }
-h5 {
-	font-size: 1.25em;
+
+p {
+	margin: 0 0 1.1rem;
 }
+
+a {
+	color: var(--accent);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.18em;
+}
+
+a:hover {
+	color: var(--accent-warm);
+}
+
 strong,
 b {
 	font-weight: 700;
+	color: rgb(var(--black));
 }
-a {
-	color: var(--accent);
-}
-a:hover {
-	color: var(--accent);
-}
-p {
-	margin-bottom: 1em;
-}
-.prose p {
-	margin-bottom: 2em;
-}
-textarea {
-	width: 100%;
-	font-size: 16px;
-}
-input {
-	font-size: 16px;
-}
-table {
-	width: 100%;
-}
+
 img {
 	max-width: 100%;
 	height: auto;
 	border-radius: 8px;
 }
+
 code {
-	padding: 2px 5px;
-	background-color: rgb(var(--gray-light));
-	border-radius: 2px;
-	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	border: 1px solid rgba(var(--black), 0.06);
+	border-radius: 5px;
+	background: rgba(255, 255, 255, 0.72);
+	color: #234047;
+	font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+	font-size: 0.88em;
+	padding: 0.1em 0.34em;
 }
+
 pre {
-	padding: 1.5em;
+	overflow: auto;
 	border-radius: 8px;
 }
-pre > code {
-	all: unset;
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.92rem;
 }
+
+th,
+td {
+	border-bottom: 1px solid rgba(var(--gray-light), 0.95);
+	padding: 0.75rem 0.7rem;
+	text-align: left;
+	vertical-align: top;
+}
+
+th {
+	background: rgba(var(--paper), 0.62);
+	color: rgb(var(--black));
+	font-weight: 700;
+}
+
 blockquote {
-	border-left: 4px solid var(--accent);
-	padding: 0 0 0 20px;
-	margin: 0;
-	font-size: 1.333em;
+	margin: 1.9rem 0;
+	border-left: 3px solid var(--accent-warm);
+	padding: 0.25rem 0 0.25rem 1rem;
+	color: rgb(var(--gray-dark));
+	background: linear-gradient(90deg, rgba(191, 101, 66, 0.08), transparent 70%);
+	font-size: 1rem;
 }
+
 hr {
-	border: none;
-	border-top: 1px solid rgb(var(--gray-light));
+	border: 0;
+	border-top: 1px solid var(--line);
+	margin: 2.2rem 0;
 }
+
+::selection {
+	background: rgba(191, 101, 66, 0.18);
+}
+
 @media (max-width: 720px) {
 	body {
-		font-size: 16px;
+		font-size: 15px;
 	}
+
 	main {
-		padding: 1em;
+		width: min(100% - 1rem, 1080px);
+		padding: 1.5rem 0;
 	}
 }
 
 .sr-only {
-	border: 0;
-	padding: 0;
-	margin: 0;
 	position: absolute !important;
-	height: 1px;
 	width: 1px;
+	height: 1px;
+	margin: 0;
+	padding: 0;
 	overflow: hidden;
-	/* IE6, IE7 - a 0 height clip, off to the bottom right of the visible 1px box */
-	clip: rect(1px 1px 1px 1px);
-	/* maybe deprecated but we need to support legacy browsers */
 	clip: rect(1px, 1px, 1px, 1px);
-	/* modern browsers, clip-path works inwards from each corner */
 	clip-path: inset(50%);
-	/* added line to stop words getting smushed together (as they go onto separate lines and some screen readers do not understand line feeds as a space */
+	border: 0;
 	white-space: nowrap;
 }
