@@ -57,8 +57,10 @@ const quickEntries = [
 									aria-label={`查看 ${tag.name} 标签下的笔记`}
 									title={`#${tag.name}`}
 									data-draggable-tag
+									data-tag-index={index}
 								>
 									<span>#{label}</span>
+									<small>{tag.count}</small>
 								</a>
 							);
 						})
@@ -132,10 +134,10 @@ const quickEntries = [
 
 				<div class="tag-dock" aria-label="标签入口">
 					{
-						tags.map((tag) => {
+						tags.map((tag, tagIndex) => {
 							const label = getShortTagName(tag.name);
 							return (
-								<a class="tag-chip" href={`${baseUrl}tags/${tag.slug}/`}>
+								<a class="tag-chip" href={`${baseUrl}tags/${tag.slug}/`} data-tag-chip data-tag-index={tagIndex}>
 									<span>#{label}</span>
 									<small>{tag.count}</small>
 								</a>
@@ -148,8 +150,88 @@ const quickEntries = [
 
 		<script>
 			const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+			const lerp = (a, b, t) => a + (b - a) * t;
 			const home = document.querySelector('.home');
 			const bubbles = [...document.querySelectorAll('[data-draggable-tag]')];
+			const chips = [...document.querySelectorAll('[data-tag-chip]')];
+			const bubbleState = new Map();
+			let frame = 0;
+			let resizeFrame = 0;
+
+			function measure() {
+				bubbleState.clear();
+				bubbles.forEach((bubble, index) => {
+					const target = chips[index];
+					if (!target) return;
+
+					const bubbleRect = bubble.getBoundingClientRect();
+					const chipRect = target.getBoundingClientRect();
+					const style = window.getComputedStyle(bubble);
+					const startX = (Number.parseFloat(style.getPropertyValue('--x')) / 100) * window.innerWidth;
+					const startY = (Number.parseFloat(style.getPropertyValue('--y')) / 100) * window.innerHeight;
+					bubbleState.set(bubble, {
+						drag: null,
+						start: {
+							left: startX - bubbleRect.width / 2,
+							top: startY - bubbleRect.height / 2,
+							width: bubbleRect.width,
+							height: bubbleRect.height,
+						},
+						end: {
+							left: chipRect.left + window.scrollX,
+							top: chipRect.top + window.scrollY,
+							width: chipRect.width,
+							height: chipRect.height,
+						},
+					});
+				});
+			}
+
+			function render() {
+				frame = 0;
+				const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.8, 1), 0, 1);
+				if (home) {
+					home.style.setProperty('--scroll-progress', progress.toFixed(4));
+					home.classList.toggle('has-scrolled', progress > 0.52);
+				}
+
+				const wobble = window.performance.now() / 1000;
+
+				for (const bubble of bubbles) {
+					const state = bubbleState.get(bubble);
+					if (!state) continue;
+					if (bubble.dataset.dragging) continue;
+
+					const targetLeft = state.end.left - window.scrollX;
+					const targetTop = state.end.top - window.scrollY;
+					const left = lerp(state.start.left, targetLeft, progress);
+					const top = lerp(state.start.top, targetTop, progress);
+					const width = lerp(state.start.width, state.end.width, progress);
+					const height = lerp(state.start.height, state.end.height, progress);
+					const radius = lerp(width / 2, 999, progress);
+					const scale = lerp(1, 1, progress);
+					const opacity = lerp(1, 1, progress);
+					const tilt = Math.sin(wobble * 1.7 + Number(bubble.dataset.tagIndex ?? 0)) * (1 - progress) * 3;
+					const driftX = Math.sin(wobble * 1.3 + Number(bubble.dataset.tagIndex ?? 0) * 0.4) * (1 - progress) * 8;
+					const driftY = Math.cos(wobble * 1.1 + Number(bubble.dataset.tagIndex ?? 0) * 0.6) * (1 - progress) * 8;
+
+					bubble.style.left = `${left}px`;
+					bubble.style.top = `${top}px`;
+					bubble.style.width = `${width}px`;
+					bubble.style.height = `${height}px`;
+					bubble.style.setProperty('--radius', `${radius}px`);
+					bubble.style.setProperty('--tx', `${driftX}px`);
+					bubble.style.setProperty('--ty', `${driftY}px`);
+					bubble.style.setProperty('--rotate', `${tilt}deg`);
+					bubble.style.setProperty('--scale', `${scale}`);
+					bubble.style.setProperty('--opacity', `${opacity}`);
+				}
+			}
+
+			function scheduleRender() {
+				if (frame) return;
+				frame = window.requestAnimationFrame(render);
+			}
 
 			bubbles.forEach((bubble) => {
 				let drag = null;
@@ -164,23 +246,30 @@ const quickEntries = [
 						offsetY: event.clientY - rect.top,
 						moved: false,
 					};
+					const state = bubbleState.get(bubble);
+					if (state) state.drag = drag;
 					bubble.classList.add('is-dragging');
 					bubble.setPointerCapture(event.pointerId);
 				});
 
 				bubble.addEventListener('pointermove', (event) => {
 					if (!drag) return;
-					const field = bubble.parentElement.getBoundingClientRect();
-					const size = bubble.getBoundingClientRect().width;
-					const left = clamp(event.clientX - field.left - drag.offsetX + size / 2, size / 2, field.width - size / 2);
-					const top = clamp(event.clientY - field.top - drag.offsetY + size / 2, size / 2, field.height - size / 2);
+					const state = bubbleState.get(bubble);
+					const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.8, 1), 0, 1);
+					const width = state.start.width + (state.end.width - state.start.width) * progress;
+					const height = state.start.height + (state.end.height - state.start.height) * progress;
+					const left = clamp(event.clientX - drag.offsetX, 0, window.innerWidth - width);
+					const top = clamp(event.clientY - drag.offsetY, 0, window.innerHeight - height);
 
 					if (Math.abs(event.clientX - drag.startX) + Math.abs(event.clientY - drag.startY) > 6) {
 						drag.moved = true;
 					}
 
-					bubble.style.setProperty('--x', `${(left / field.width) * 100}%`);
-					bubble.style.setProperty('--y', `${(top / field.height) * 100}%`);
+					bubble.dataset.dragging = 'true';
+					bubble.style.left = `${left}px`;
+					bubble.style.top = `${top}px`;
+					bubble.style.width = `${width}px`;
+					bubble.style.height = `${height}px`;
 				});
 
 				bubble.addEventListener('pointerup', (event) => {
@@ -189,8 +278,10 @@ const quickEntries = [
 						bubble.dataset.wasDragged = 'true';
 						window.setTimeout(() => delete bubble.dataset.wasDragged, 0);
 					}
+					delete bubble.dataset.dragging;
 					drag = null;
 					bubble.classList.remove('is-dragging');
+					scheduleRender();
 				});
 
 				bubble.addEventListener('click', (event) => {
@@ -198,15 +289,17 @@ const quickEntries = [
 				});
 			});
 
-			const updateScrollState = () => {
-				if (!home) return;
-				const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.72, 1), 0, 1);
-				home.style.setProperty('--scroll-progress', progress.toFixed(3));
-				home.classList.toggle('has-scrolled', progress > 0.42);
-			};
-
-			updateScrollState();
-			window.addEventListener('scroll', updateScrollState, { passive: true });
+			measure();
+			render();
+			window.addEventListener('scroll', scheduleRender, { passive: true });
+			window.addEventListener('resize', () => {
+				if (resizeFrame) return;
+				resizeFrame = window.requestAnimationFrame(() => {
+					resizeFrame = 0;
+					measure();
+					render();
+				});
+			});
 		</script>
 	</body>
 </html>
@@ -348,28 +441,25 @@ const quickEntries = [
 		position: fixed;
 		inset: 0;
 		z-index: 2;
-		opacity: calc(1 - var(--scroll-progress) * 0.94);
-		transform: translateY(calc(var(--scroll-progress) * 22vh)) scale(calc(1 - var(--scroll-progress) * 0.08));
 		pointer-events: auto;
-		transition: opacity 160ms ease;
-		will-change: opacity, transform;
-	}
-
-	.home.has-scrolled .tag-field {
-		pointer-events: none;
+		will-change: contents;
 	}
 
 	.tag-bubble {
-		position: absolute;
-		left: var(--x);
-		top: var(--y);
-		display: grid;
+		position: fixed;
+		left: 50%;
+		top: 50%;
+		display: inline-grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		place-items: center;
+		gap: calc(var(--scroll-progress) * 0.45rem);
 		width: var(--size);
 		height: var(--size);
-		padding: 0.3rem;
+		padding:
+			calc(0.3rem + var(--scroll-progress) * 0.26rem)
+			calc(0.3rem + var(--scroll-progress) * 0.42rem);
 		border: 1px solid rgba(255, 255, 255, 0.22);
-		border-radius: 50%;
+		border-radius: var(--radius, 999px);
 		background:
 			linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.045)),
 			oklch(0.62 0.12 var(--hue) / 0.22);
@@ -382,13 +472,16 @@ const quickEntries = [
 		text-decoration: none;
 		touch-action: none;
 		backdrop-filter: blur(18px) saturate(1.35);
-		transform: translate(-50%, -50%) scale(0.2);
-		animation:
-			bubble-enter 820ms cubic-bezier(0.2, 0.9, 0.18, 1.08) forwards,
-			drift 12s ease-in-out infinite;
-		animation-delay: var(--delay), calc(0.85s + var(--delay) * -1);
+		opacity: var(--opacity, 1);
+		transform:
+			translate3d(var(--tx, 0), var(--ty, 0), 0)
+			rotate(var(--rotate, 0deg))
+			scale(var(--scale, 1));
+		animation: bubble-enter 820ms cubic-bezier(0.2, 0.9, 0.18, 1.08) both;
+		animation-delay: var(--delay);
 		cursor: grab;
-		will-change: transform;
+		contain: layout style paint;
+		will-change: left, top, width, height, border-radius, transform;
 	}
 
 	.tag-bubble::before {
@@ -415,11 +508,26 @@ const quickEntries = [
 
 	.tag-bubble span {
 		max-width: 100%;
-		font-size: clamp(0.54rem, 0.72vw, 0.74rem);
+		min-width: 0;
+		font-size: calc(0.56rem + var(--scroll-progress) * 0.26rem);
 		font-weight: 800;
 		line-height: 1.16;
 		overflow-wrap: anywhere;
 		text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+	}
+
+	.tag-bubble small {
+		display: grid;
+		place-items: center;
+		min-width: calc(0px + var(--scroll-progress) * 1.35rem);
+		height: calc(0px + var(--scroll-progress) * 1.35rem);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.22);
+		color: inherit;
+		font-size: 0.72rem;
+		font-weight: 900;
+		opacity: var(--scroll-progress);
+		overflow: hidden;
 	}
 
 	.tag-bubble:hover,
@@ -551,8 +659,8 @@ const quickEntries = [
 
 	.scroll-cue {
 		position: absolute;
-		left: 50%;
-		bottom: 1.35rem;
+		right: clamp(1rem, 3vw, 2rem);
+		top: 50%;
 		z-index: 5;
 		display: grid;
 		place-items: center;
@@ -561,7 +669,7 @@ const quickEntries = [
 		border: 1px solid rgba(255, 255, 255, 0.26);
 		border-radius: 999px;
 		background: rgba(255, 255, 255, 0.08);
-		transform: translateX(-50%);
+		transform: translateY(-50%);
 		backdrop-filter: blur(12px);
 	}
 
@@ -679,6 +787,8 @@ const quickEntries = [
 		color: rgb(var(--black));
 		text-decoration: none;
 		backdrop-filter: blur(16px);
+		opacity: 0;
+		pointer-events: none;
 		transition: transform 160ms ease, background 160ms ease;
 	}
 
@@ -707,25 +817,15 @@ const quickEntries = [
 	@keyframes bubble-enter {
 		0% {
 			opacity: 0;
-			transform: translate(-50%, -50%) scale(0.2);
+			filter: blur(8px);
 		}
 		70% {
 			opacity: 1;
-			transform: translate(-50%, -50%) scale(1.08);
+			filter: blur(0);
 		}
 		100% {
 			opacity: 1;
-			transform: translate(-50%, -50%) scale(1);
-		}
-	}
-
-	@keyframes drift {
-		0%,
-		100% {
-			transform: translate(-50%, -50%) scale(1);
-		}
-		50% {
-			transform: translate(calc(-50% + var(--float)), calc(-50% - var(--float))) scale(1.03);
+			filter: blur(0);
 		}
 	}
 
