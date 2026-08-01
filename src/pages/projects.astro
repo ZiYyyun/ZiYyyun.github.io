@@ -1,0 +1,188 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import ProfileCard from '../components/ProfileCard.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const baseUrl = import.meta.env.BASE_URL;
+const fallbackRepos = [
+	{ name: 'ZiYyun-ObsidianUnivrse', description: '资源仓库，笔记源头。', html_url: 'https://github.com/ZiYyyun/ZiYyun-ObsidianUnivrse', language: 'Markdown' },
+	{ name: 'ZiYyun.github.io', description: '当前博客站点。', html_url: 'https://github.com/ZiYyyun/ZiYyun.github.io', language: 'Astro' },
+];
+
+async function loadRepos() {
+	try {
+		const response = await fetch('https://api.github.com/users/ZiYyyun/repos?sort=updated&per_page=8');
+		if (!response.ok) return fallbackRepos;
+		const repos = await response.json();
+		return repos
+			.filter((repo: any) => !repo.fork)
+			.slice(0, 8)
+			.map((repo: any) => ({
+				name: repo.name,
+				description: repo.description || 'No description.',
+				html_url: repo.html_url,
+				language: repo.language || 'Unknown',
+			}));
+	} catch {
+		return fallbackRepos;
+	}
+}
+
+const repos = await loadRepos();
+const notes = await getCollection('blog');
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`项目 - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="page">
+			<div class="page-grid">
+				<ProfileCard />
+				<section class="content-column">
+					<header class="page-heading">
+						<p class="eyebrow">GitHub</p>
+						<h1>项目仓库</h1>
+						<p>先把常用仓库摆出来，后续可以继续接个人作品、实验项目和同步库。</p>
+					</header>
+
+					<section class="card-grid">
+						{
+							repos.map((repo) => (
+								<article class="repo-card fuwari-card">
+									<a href={repo.html_url} target="_blank" rel="noreferrer">
+										<h2>{repo.name}</h2>
+										<p>{repo.description}</p>
+										<span>{repo.language}</span>
+									</a>
+								</article>
+							))
+						}
+					</section>
+
+					<section class="info-panel fuwari-card">
+						<h2>内容规划</h2>
+						<div class="chips">
+							<span>笔记</span>
+							<span>GitHub 仓库</span>
+							<span>开发环境</span>
+							<span>电脑配置</span>
+						</div>
+						<p>这页以后可以接 GitHub API、静态数据表或者你自己的清单文件。</p>
+						<p>当前已发布笔记：{notes.length} 篇。</p>
+					</section>
+				</section>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.page {
+		padding-top: 2rem;
+	}
+
+	.page-grid {
+		display: grid;
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.content-column {
+		min-width: 0;
+		display: grid;
+		gap: 1rem;
+	}
+
+	.page-heading {
+		padding: 0 0.25rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.35rem;
+		color: var(--primary);
+		font-size: 0.76rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.page-heading h1 {
+		margin-bottom: 0.45rem;
+		font-size: clamp(2.2rem, 5vw, 3.6rem);
+	}
+
+	.page-heading p:last-child {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.92rem;
+	}
+
+	.card-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.85rem;
+	}
+
+	.repo-card a {
+		display: grid;
+		gap: 0.45rem;
+		padding: 1rem 1.1rem;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.repo-card h2 {
+		margin: 0;
+		font-size: 1.08rem;
+	}
+
+	.repo-card p {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.88rem;
+		line-height: 1.58;
+	}
+
+	.repo-card span {
+		width: fit-content;
+		border-radius: 999px;
+		background: var(--btn-regular-bg);
+		padding: 0.16rem 0.45rem;
+		color: var(--btn-content);
+		font-size: 0.72rem;
+	}
+
+	.info-panel {
+		padding: 1rem 1.1rem;
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin: 0.8rem 0 0.75rem;
+	}
+
+	.chips span {
+		border-radius: 999px;
+		background: var(--btn-regular-bg);
+		padding: 0.18rem 0.55rem;
+		color: var(--btn-content);
+		font-size: 0.74rem;
+	}
+
+	@media (max-width: 980px) {
+		.page-grid,
+		.card-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

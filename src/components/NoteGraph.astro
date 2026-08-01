@@ -9,7 +9,7 @@ type Props = {
 const { graph } = Astro.props;
 ---
 
-<aside class="note-graph" aria-label="笔记关系图谱">
+<aside class="note-graph fuwari-card" aria-label="笔记关系图谱">
 	<div class="graph-head">
 		<h2>关系图谱</h2>
 		<span>{graph.nodes.length} nodes</span>
@@ -20,14 +20,9 @@ const { graph } = Astro.props;
 <style>
 	.note-graph {
 		position: sticky;
-		top: 5rem;
+		top: 5.5rem;
 		align-self: start;
-		border: 1px solid rgba(var(--black), 0.07);
-		border-radius: 8px;
-		background: rgba(var(--surface), 0.84);
-		box-shadow: 0 18px 46px rgba(24, 30, 38, 0.07);
-		padding: 0.9rem;
-		backdrop-filter: blur(18px);
+		padding: 0.75rem;
 	}
 
 	.graph-head {
@@ -36,6 +31,7 @@ const { graph } = Astro.props;
 		justify-content: space-between;
 		gap: 1rem;
 		margin-bottom: 0.75rem;
+		padding: 0.25rem 0.25rem 0;
 	}
 
 	h2 {
@@ -55,18 +51,17 @@ const { graph } = Astro.props;
 		border: 1px solid rgba(var(--black), 0.06);
 		border-radius: 8px;
 		background:
-			radial-gradient(circle at 50% 40%, rgba(47, 111, 115, 0.1), transparent 56%),
-			linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(var(--paper), 0.62)),
-			rgb(var(--paper));
+			radial-gradient(circle at 50% 40%, oklch(0.8 0.12 var(--hue) / 0.18), transparent 56%),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(245, 245, 250, 0.8));
 	}
 
 	:global(.force-note-graph line) {
-		stroke: rgba(47, 111, 115, 0.34);
+		stroke: oklch(0.58 0.12 var(--hue) / 0.36);
 		stroke-width: 1.05;
 	}
 
 	:global(.force-note-graph circle) {
-		fill: var(--accent);
+		fill: var(--primary);
 		opacity: 0.68;
 		transition:
 			opacity 0.2s ease,
@@ -74,7 +69,7 @@ const { graph } = Astro.props;
 	}
 
 	:global(.force-note-graph circle.active) {
-		fill: var(--accent-warm);
+		fill: oklch(0.65 0.18 25);
 		opacity: 1;
 	}
 

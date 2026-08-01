@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import Header from '../../components/Header.astro';
+import ProfileCard from '../../components/ProfileCard.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 import { getTagSummaries } from '../../lib/tags';
 
@@ -26,103 +27,109 @@ const tag = Astro.props;
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="tag-hero">
-				<p>Tag</p>
-				<h1>#{tag.name}</h1>
-				<span>{tag.posts.length} 篇笔记</span>
-			</section>
+		<main class="tag-page">
+			<div class="tag-grid">
+				<ProfileCard />
+				<section class="content-column">
+					<header class="page-heading">
+						<p class="eyebrow">Tag Archive</p>
+						<h1>#{tag.name}</h1>
+						<p>{tag.posts.length} 篇笔记</p>
+					</header>
 
-			<section class="post-list">
-				{
-					tag.posts.map((post) => (
-						<article>
-							<a href={post.url}>
-								<strong>{post.title}</strong>
-								<span>{post.description}</span>
-							</a>
-						</article>
-					))
-				}
-			</section>
+					<section class="post-list">
+						{
+							tag.posts.map((post) => (
+								<article class="tag-post fuwari-card">
+									<a href={post.url}>
+										<strong>{post.title}</strong>
+										<span>{post.description}</span>
+									</a>
+								</article>
+							))
+						}
+					</section>
+				</section>
+			</div>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	main {
-		width: min(940px, calc(100% - 2rem));
-		padding-top: 4rem;
+	.tag-page {
+		padding-top: 2rem;
 	}
 
-	.tag-hero {
-		margin-bottom: 2rem;
+	.tag-grid {
+		display: grid;
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
 	}
 
-	.tag-hero p {
-		margin: 0 0 0.45rem;
-		color: var(--accent);
+	.page-heading {
+		margin: 0.6rem 0 1.2rem;
+		padding: 0 0.25rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.35rem;
+		color: var(--primary);
 		font-size: 0.76rem;
 		font-weight: 700;
 		text-transform: uppercase;
 	}
 
-	.tag-hero h1 {
-		margin-bottom: 0.4rem;
+	.page-heading h1 {
+		margin-bottom: 0.45rem;
+		font-size: clamp(2.2rem, 5vw, 3.6rem);
 	}
 
-	.tag-hero span {
+	.page-heading p:last-child {
+		margin: 0;
 		color: rgb(var(--gray));
+		font-size: 0.92rem;
 	}
 
 	.post-list {
 		display: grid;
-		gap: 0.85rem;
+		gap: 0.8rem;
 	}
 
-	article a {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(220px, 0.46fr);
-		gap: 1rem;
-		align-items: baseline;
-		border: 1px solid rgba(var(--black), 0.075);
-		border-radius: 8px;
-		background: rgba(var(--surface), 0.82);
-		box-shadow: 0 12px 34px rgba(24, 30, 38, 0.045);
-		padding: 1rem 1.05rem;
-		color: inherit;
-		text-decoration: none;
+	.tag-post {
+		padding: 0.3rem;
 		transition:
 			transform 0.2s ease,
-			border-color 0.2s ease,
 			box-shadow 0.2s ease;
 	}
 
-	article a:hover {
-		border-color: rgba(29, 111, 116, 0.36);
-		box-shadow: var(--soft-shadow);
-		transform: translateY(-1px);
+	.tag-post:hover {
+		box-shadow: var(--shadow-lift);
+		transform: translateY(-2px);
+	}
+
+	.tag-post a {
+		display: grid;
+		gap: 0.45rem;
+		padding: 1rem 1.15rem;
+		color: inherit;
+		text-decoration: none;
 	}
 
 	strong {
 		color: rgb(var(--black));
-		font-size: 1rem;
-		line-height: 1.42;
+		font-size: 1.08rem;
 	}
 
 	span {
 		color: rgb(var(--gray));
-		font-size: 0.86rem;
+		font-size: 0.88rem;
 		line-height: 1.58;
 	}
 
-	@media (max-width: 680px) {
-		main {
-			width: min(100% - 1rem, 940px);
-		}
-
-		article a {
+	@media (max-width: 980px) {
+		.tag-grid {
 			grid-template-columns: 1fr;
 		}
 	}

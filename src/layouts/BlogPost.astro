@@ -6,13 +6,16 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import NoteGraph from '../components/NoteGraph.astro';
+import ProfileCard from '../components/ProfileCard.astro';
+import { tagSlug } from '../lib/tags';
 import type { NoteGraph as NoteGraphData } from '../lib/noteGraph';
 
 type Props = CollectionEntry<'blog'>['data'] & {
 	graph?: NoteGraphData;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, graph } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, graph, tags = [] } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
 const heroImageIsString = typeof heroImage === 'string';
 const heroImageIsPublicUrl = heroImageIsString && (heroImage.startsWith('/') || heroImage.startsWith('http'));
 const heroImageIsImported = heroImage && !heroImageIsString;
@@ -25,158 +28,127 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 
 	<body>
 		<Header />
-		<main>
-			<article>
-				<header class="article-hero">
-					<p class="kicker">Notebook</p>
-					<h1>{title}</h1>
-					{description && <p class="description">{description}</p>}
-					<div class="meta">
-						<span><FormattedDate date={pubDate} /></span>
-						{updatedDate && <span>更新于 <FormattedDate date={updatedDate} /></span>}
-					</div>
-				</header>
+		<main class="post-page">
+			<div class:list={['post-grid', { 'without-graph': !graph }]}>
+				<ProfileCard />
 
-				{
-					(heroImageIsImported || heroImageIsPublicUrl) && (
-						<div class="hero-image">
-							{heroImageIsImported && <Image width={1180} height={520} src={heroImage} alt="" />}
-							{heroImageIsPublicUrl && <img src={heroImage} alt="" />}
+				<article class="post-card fuwari-card">
+					<header class="post-heading">
+						<p class="eyebrow">Notebook</p>
+						<h1>{title}</h1>
+						{description && <p class="description">{description}</p>}
+						<div class="meta">
+							<span><FormattedDate date={pubDate} /></span>
+							{updatedDate && <span>更新于 <FormattedDate date={updatedDate} /></span>}
+							{tags.map((tag) => <a href={`${baseUrl}tags/${tagSlug(tag)}/`}>#{tag}</a>)}
 						</div>
-					)
-				}
+					</header>
 
-				<div class:list={['article-shell', { 'without-graph': !graph }]}>
-					<aside class="reading-meta" aria-label="文章信息">
-						<span>Published</span>
-						<strong><FormattedDate date={pubDate} /></strong>
-					</aside>
+					{
+						(heroImageIsImported || heroImageIsPublicUrl) && (
+							<div class="hero-image">
+								{heroImageIsImported && <Image width={1100} height={460} src={heroImage} alt="" />}
+								{heroImageIsPublicUrl && <img src={heroImage} alt="" />}
+							</div>
+						)
+					}
 
-					<div class="prose">
+					<div class="prose markdown-body">
 						<slot />
 					</div>
+				</article>
 
-					{graph && <NoteGraph graph={graph} />}
-				</div>
-			</article>
+				{graph && <NoteGraph graph={graph} />}
+			</div>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	main {
-		width: 100%;
-		max-width: none;
-		padding: 0;
+	.post-page {
+		padding-top: 2rem;
 	}
 
-	article {
-		padding: 3.4rem 0 1rem;
+	.post-grid {
+		display: grid;
+		grid-template-columns: 16.5rem minmax(0, 1fr) 18rem;
+		gap: 1rem;
+		align-items: start;
 	}
 
-	.article-hero {
-		width: min(980px, calc(100% - 2rem));
-		margin: 0 auto 2.4rem;
+	.post-grid.without-graph {
+		grid-template-columns: 16.5rem minmax(0, 1fr);
 	}
 
-	.kicker {
-		margin: 0 0 0.8rem;
-		color: var(--accent);
-		font-size: 0.74rem;
+	.post-card {
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.post-heading {
+		padding: 2rem 2.25rem 1.25rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.55rem;
+		color: var(--primary);
+		font-size: 0.76rem;
 		font-weight: 700;
 		text-transform: uppercase;
 	}
 
 	h1 {
-		max-width: 920px;
 		margin: 0;
-		font-size: clamp(2.2rem, 6.4vw, 4.9rem);
-		line-height: 1.02;
+		font-size: clamp(2rem, 5vw, 3.5rem);
+		line-height: 1.08;
 	}
 
 	.description {
-		max-width: 720px;
-		margin: 1.05rem 0 0;
+		max-width: 700px;
+		margin: 0.85rem 0 0;
 		color: rgb(var(--gray));
-		font-size: clamp(1rem, 1.8vw, 1.12rem);
-		line-height: 1.74;
+		font-size: 1rem;
 	}
 
 	.meta {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.55rem;
-		margin-top: 1.35rem;
+		align-items: center;
+		gap: 0.48rem;
+		margin-top: 1rem;
 		color: rgb(var(--gray));
-		font-size: 0.85rem;
+		font-size: 0.78rem;
 	}
 
-	.meta span {
-		display: inline-flex;
-		align-items: center;
-		min-height: 30px;
-		border: 1px solid rgba(var(--black), 0.09);
-		border-radius: 999px;
-		padding: 0 0.75rem;
-		background: rgba(var(--surface), 0.68);
+	.meta a {
+		border-radius: 0.45rem;
+		background: var(--btn-regular-bg);
+		padding: 0.14rem 0.42rem;
+		color: var(--btn-content);
+		text-decoration: none;
+	}
+
+	.meta a:hover {
+		background: var(--btn-regular-bg-hover);
 	}
 
 	.hero-image {
-		width: min(1180px, calc(100% - 2rem));
-		margin: 0 auto 2.5rem;
+		padding: 0 1rem;
 	}
 
 	.hero-image img {
 		display: block;
 		width: 100%;
-		max-height: 520px;
-		border-radius: 8px;
-		box-shadow: var(--lift-shadow);
+		max-height: 460px;
 		object-fit: cover;
 	}
 
-	.article-shell {
-		display: grid;
-		grid-template-columns: minmax(112px, 150px) minmax(0, 820px) minmax(250px, 300px);
-		gap: clamp(1rem, 2.5vw, 2rem);
-		align-items: start;
-		width: min(1320px, calc(100% - 2rem));
-		margin: 0 auto;
-	}
-
-	.article-shell.without-graph {
-		grid-template-columns: minmax(112px, 150px) minmax(0, 840px);
-		width: min(1040px, calc(100% - 2rem));
-	}
-
-	.reading-meta {
-		position: sticky;
-		top: 5rem;
-		display: grid;
-		gap: 0.25rem;
-		border-top: 1px solid var(--line);
-		padding-top: 1rem;
-		color: rgb(var(--gray));
-		font-size: 0.76rem;
-	}
-
-	.reading-meta strong {
-		color: rgb(var(--black));
-		font-size: 0.88rem;
-		line-height: 1.35;
-	}
-
 	.prose {
-		min-width: 0;
-		border: 1px solid rgba(var(--black), 0.075);
-		border-radius: 8px;
-		background: rgba(var(--surface), 0.88);
-		box-shadow: var(--soft-shadow);
-		padding: clamp(1.35rem, 4vw, 3.25rem);
+		padding: 1.6rem 2.25rem 2.25rem;
 		color: rgb(var(--gray-dark));
-		font-size: clamp(1rem, 1.4vw, 1.06rem);
-		line-height: 1.92;
+		font-size: clamp(1rem, 1.25vw, 1.06rem);
+		line-height: 1.96;
 	}
 
 	.prose :global(> *:first-child) {
@@ -191,27 +163,35 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 	.prose :global(h2),
 	.prose :global(h3),
 	.prose :global(h4) {
-		scroll-margin-top: 5rem;
+		scroll-margin-top: 5.5rem;
 	}
 
 	.prose :global(h2) {
-		margin-top: 3rem;
-		border-top: 1px solid rgba(var(--gray-light), 0.9);
-		padding-top: 1.55rem;
-		font-size: clamp(1.45rem, 3vw, 2rem);
-		line-height: 1.28;
+		margin-top: 2.7rem;
+		border-top: 1px dashed var(--line-color);
+		padding-top: 1.35rem;
+		font-size: clamp(1.35rem, 3vw, 1.9rem);
+	}
+
+	.prose :global(h2)::before {
+		display: inline-block;
+		width: 0.38rem;
+		height: 1.05em;
+		margin-right: 0.55rem;
+		border-radius: 999px;
+		background: var(--primary);
+		vertical-align: -0.14em;
+		content: '';
 	}
 
 	.prose :global(h3) {
-		margin-top: 2.1rem;
-		font-size: 1.24rem;
-		line-height: 1.36;
+		margin-top: 2rem;
+		font-size: 1.22rem;
 	}
 
-	.prose :global(h4) {
-		margin-top: 1.6rem;
-		color: rgb(var(--gray-dark));
-		font-size: 1.03rem;
+	.prose :global(h3)::before {
+		color: var(--primary);
+		content: '# ';
 	}
 
 	.prose :global(p),
@@ -221,7 +201,7 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 	}
 
 	.prose :global(p) {
-		max-width: 72ch;
+		max-width: 74ch;
 	}
 
 	.prose :global(ul),
@@ -229,24 +209,69 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 		padding-left: 1.45rem;
 	}
 
-	.prose :global(li) {
-		padding-left: 0.15rem;
+	.prose :global(li)::marker {
+		color: var(--primary);
 	}
 
 	.prose :global(li + li) {
-		margin-top: 0.38rem;
+		margin-top: 0.35rem;
+	}
+
+	.prose :global(input[type='checkbox']) {
+		width: 1rem;
+		height: 1rem;
+		margin-right: 0.35rem;
+		accent-color: var(--primary);
+		vertical-align: -0.12em;
 	}
 
 	.prose :global(a) {
+		border-radius: 0.3rem;
 		font-weight: 500;
-		text-decoration-style: dotted;
+		text-decoration-color: var(--link-underline);
+		text-decoration-style: dashed;
+	}
+
+	.prose :global(a:hover) {
+		background: var(--btn-plain-bg-hover);
+		text-decoration-color: transparent;
 	}
 
 	.prose :global(img) {
 		display: block;
-		margin: 2rem auto;
-		border: 1px solid rgba(var(--black), 0.07);
-		box-shadow: 0 14px 36px rgba(var(--gray), 0.16);
+		margin: 1.8rem auto;
+		box-shadow: 0 18px 48px rgba(30, 34, 52, 0.12);
+	}
+
+	.prose :global(kbd) {
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-bottom-width: 2px;
+		border-radius: 0.45rem;
+		background: rgba(255, 255, 255, 0.75);
+		padding: 0.08rem 0.35rem;
+		color: rgb(var(--gray-dark));
+		font-family: 'JetBrains Mono', ui-monospace, monospace;
+		font-size: 0.82em;
+	}
+
+	.prose :global(mark) {
+		border-radius: 0.35rem;
+		background: oklch(0.88 0.08 90 / 0.55);
+		padding: 0.02rem 0.24rem;
+	}
+
+	.prose :global(details) {
+		margin: 1.4rem 0;
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		border-radius: 0.9rem;
+		background: rgba(255, 255, 255, 0.52);
+		padding: 0.85rem 1rem;
+	}
+
+	.prose :global(summary) {
+		cursor: pointer;
+		color: rgb(var(--black));
+		font-weight: 700;
 	}
 
 	.prose :global(table) {
@@ -254,8 +279,16 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 		margin: 1.6rem 0;
 		overflow-x: auto;
 		border: 1px solid rgba(var(--gray-light), 0.95);
-		border-radius: 8px;
+		border-radius: 0.75rem;
 		background: white;
+	}
+
+	.prose :global(tbody tr:hover) {
+		background: oklch(0.97 0.012 var(--hue));
+	}
+
+	.prose :global(pre) {
+		margin: 1.6rem 0;
 	}
 
 	.prose :global(pre code) {
@@ -265,42 +298,38 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 	}
 
 	.prose :global(.expressive-code) {
-		margin: 1.65rem 0;
+		margin: 1.6rem 0;
 	}
 
-	.prose :global(.expressive-code .frame) {
-		box-shadow: none;
-	}
-
-	@media (max-width: 1120px) {
-		.article-shell {
-			grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+	@media (max-width: 1180px) {
+		.post-grid {
+			grid-template-columns: 14rem minmax(0, 1fr) 16rem;
 		}
 
-		.reading-meta {
-			display: none;
+		.post-grid.without-graph {
+			grid-template-columns: 14rem minmax(0, 1fr);
 		}
 	}
 
-	@media (max-width: 860px) {
-		article {
-			padding-top: 2rem;
-		}
-
-		.article-shell,
-		.article-shell.without-graph {
+	@media (max-width: 980px) {
+		.post-grid,
+		.post-grid.without-graph {
 			grid-template-columns: 1fr;
-			width: min(100% - 1rem, 820px);
 		}
+	}
 
-		.article-hero,
-		.hero-image {
-			width: min(100% - 1rem, 980px);
+	@media (max-width: 600px) {
+		.post-heading {
+			padding: 1.35rem 1.15rem 1rem;
 		}
 
 		.prose {
-			padding: 1.15rem;
-			line-height: 1.82;
+			padding: 1rem 1.15rem 1.5rem;
+			font-size: 1rem;
+		}
+
+		.hero-image {
+			padding: 0 0.75rem;
 		}
 	}
 </style>

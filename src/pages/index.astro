@@ -1,7 +1,7 @@
 ---
 import { Code, Mail, MessageCircle, Rss } from '@lucide/astro';
 import { getCollection } from 'astro:content';
-import BackgroundImage from '../assets/blog-placeholder-4.jpg';
+import BackgroundImage from '../assets/fuwari-banner.png';
 import BaseHead from '../components/BaseHead.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { getTagSummaries } from '../lib/tags';
@@ -21,7 +21,7 @@ function getShortTagName(name: string) {
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
-	<body>
+	<body class="home-body">
 		<main class="home" style={`--home-bg: url(${BackgroundImage.src});`}>
 			<div class="tag-field" aria-label="笔记标签">
 				{
@@ -31,7 +31,7 @@ function getShortTagName(name: string) {
 							<a
 								class="tag-bubble"
 								href={`${baseUrl}tags/${tag.slug}/`}
-								style={`--size:${Math.min(42 + tag.count * 7, 78)}px; --delay:${index * -0.82}s; --x:${6 + (index * 23) % 88}%; --y:${7 + (index * 37) % 86}%; --float:${12 + (index % 5) * 4}px;`}
+								style={`--size:${Math.min(46 + tag.count * 7, 84)}px; --delay:${index * -0.82}s; --x:${6 + (index * 23) % 88}%; --y:${7 + (index * 37) % 86}%; --float:${12 + (index % 5) * 4}px;`}
 								aria-label={`查看 ${tag.name} 标签下的笔记`}
 								title={`#${tag.name}`}
 							>
@@ -43,13 +43,23 @@ function getShortTagName(name: string) {
 			</div>
 
 			<section class="welcome" aria-label="Welcome">
-				<p>ZiYyun's Notebook</p>
+				<p>{SITE_TITLE}</p>
 				<h1>Welcome</h1>
+				<div class="hero-actions">
+					<a class="enter-link fuwari-button" href={`${baseUrl}blog/`}>进入笔记</a>
+					<a class="enter-link ghost" href={`${baseUrl}projects/`}>项目仓库</a>
+				</div>
 			</section>
 
 			<section class="bio" aria-label="Profile">
+				<div class="bio-kicker">Personal Universe</div>
 				<p class="name">ZiYyun</p>
-				<p class="motto">Hello</p>
+				<p class="motto">沉入长期笔记，把代码、系统和日常思考慢慢写清楚。</p>
+				<div class="bio-meta">
+					<span>{posts.length} notes</span>
+					<span>{tags.length} tags</span>
+					<span>Astro</span>
+				</div>
 				<div class="links" aria-label="个人链接">
 					<a href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
 						<Code size={18} />
@@ -70,9 +80,9 @@ function getShortTagName(name: string) {
 </html>
 
 <style>
-	body {
+	.home-body {
 		overflow: hidden;
-		background: #11151b;
+		background: #15151e;
 	}
 
 	.home {
@@ -84,7 +94,7 @@ function getShortTagName(name: string) {
 		padding: 0;
 		overflow: hidden;
 		background:
-			linear-gradient(115deg, rgba(15, 18, 23, 0.92), rgba(15, 18, 23, 0.46) 52%, rgba(245, 242, 233, 0.2)),
+			linear-gradient(115deg, rgba(15, 15, 24, 0.93), rgba(27, 25, 46, 0.52) 52%, rgba(80, 74, 128, 0.16)),
 			var(--home-bg) center / cover no-repeat;
 		isolation: isolate;
 	}
@@ -94,18 +104,20 @@ function getShortTagName(name: string) {
 		inset: 0;
 		z-index: -1;
 		background:
-			linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-			linear-gradient(0deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-		background-size: 72px 72px;
-		mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 76%);
+			radial-gradient(circle at 28% 38%, oklch(0.75 0.16 285 / 0.14), transparent 28rem),
+			radial-gradient(circle at 75% 65%, oklch(0.78 0.13 185 / 0.11), transparent 24rem),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+		background-size: auto, auto, 72px 72px, 72px 72px;
+		mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 82%);
 		content: '';
 	}
 
 	.home::after {
 		position: absolute;
 		inset: auto 0 0;
-		height: 34vh;
-		background: linear-gradient(0deg, rgba(12, 14, 18, 0.76), transparent);
+		height: 42vh;
+		background: linear-gradient(0deg, rgba(10, 10, 18, 0.82), transparent);
 		content: '';
 		pointer-events: none;
 	}
@@ -113,10 +125,11 @@ function getShortTagName(name: string) {
 	.welcome {
 		position: absolute;
 		left: 50%;
-		top: 48%;
+		top: 47%;
 		z-index: 1;
 		display: grid;
-		gap: 0.45rem;
+		justify-items: center;
+		gap: 0.6rem;
 		width: min(900px, calc(100% - 2rem));
 		color: white;
 		text-align: center;
@@ -126,19 +139,56 @@ function getShortTagName(name: string) {
 
 	.welcome p {
 		margin: 0;
-		color: rgba(255, 255, 255, 0.68);
+		color: rgba(255, 255, 255, 0.72);
 		font-size: clamp(0.72rem, 1.4vw, 0.9rem);
 		font-weight: 700;
+		letter-spacing: 0.1em;
 		text-transform: uppercase;
 	}
 
 	.welcome h1 {
 		margin: 0;
-		color: rgba(255, 255, 255, 0.92);
+		color: rgba(255, 255, 255, 0.94);
 		font-size: clamp(4rem, 13vw, 12rem);
 		font-weight: 700;
 		line-height: 0.86;
 		text-shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+	}
+
+	.hero-actions {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.65rem;
+		margin-top: 1.2rem;
+		pointer-events: auto;
+	}
+
+	.enter-link {
+		height: 2.6rem;
+		padding: 0 1rem;
+		color: white;
+	}
+
+	.enter-link:hover {
+		color: var(--deep-text);
+	}
+
+	.enter-link.ghost {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 0.75rem;
+		background: rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.86);
+		text-decoration: none;
+		backdrop-filter: blur(16px);
+	}
+
+	.enter-link.ghost:hover {
+		background: rgba(255, 255, 255, 0.86);
+		color: rgb(var(--black));
 	}
 
 	.tag-field {
@@ -155,41 +205,63 @@ function getShortTagName(name: string) {
 		place-items: center;
 		width: var(--size);
 		height: var(--size);
-		padding: 0.25rem;
-		border: 1px solid rgba(255, 255, 255, 0.28);
+		padding: 0.3rem;
+		border: 1px solid rgba(255, 255, 255, 0.2);
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.12);
-		color: rgba(255, 255, 255, 0.86);
-		box-shadow: 0 18px 58px rgba(0, 0, 0, 0.26);
+		background:
+			linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.045)),
+			oklch(0.62 0.08 250 / 0.16);
+		color: rgba(255, 255, 255, 0.88);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.22),
+			0 18px 60px rgba(0, 0, 0, 0.22),
+			0 0 28px oklch(0.72 0.14 var(--hue) / 0.12);
 		text-align: center;
 		text-decoration: none;
-		backdrop-filter: blur(16px);
+		backdrop-filter: blur(18px) saturate(1.3);
 		transform: translate(-50%, -50%);
 		animation: drift 12s ease-in-out infinite;
 		animation-delay: var(--delay);
 	}
 
+	.tag-bubble::before {
+		position: absolute;
+		inset: 10%;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: inherit;
+		content: '';
+		pointer-events: none;
+	}
+
 	.tag-bubble:nth-child(3n) {
-		border-color: rgba(191, 101, 66, 0.46);
-		background: rgba(191, 101, 66, 0.16);
+		background:
+			linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04)),
+			oklch(0.58 0.14 315 / 0.17);
 	}
 
 	.tag-bubble:nth-child(4n) {
-		border-color: rgba(102, 87, 168, 0.42);
-		background: rgba(102, 87, 168, 0.15);
+		background:
+			linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04)),
+			oklch(0.6 0.12 190 / 0.16);
 	}
 
 	.tag-bubble span {
 		max-width: 100%;
-		font-size: clamp(0.52rem, 0.7vw, 0.7rem);
+		font-size: clamp(0.52rem, 0.7vw, 0.72rem);
+		font-weight: 700;
 		line-height: 1.16;
 		overflow-wrap: anywhere;
+		text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
 	}
 
 	.tag-bubble:hover {
-		background: rgba(255, 255, 255, 0.88);
+		background: rgba(255, 255, 255, 0.86);
 		color: rgb(var(--black));
 		transform: translate(-50%, -50%) scale(1.08);
+	}
+
+	.tag-bubble:hover span {
+		text-shadow: none;
 	}
 
 	.bio {
@@ -197,9 +269,30 @@ function getShortTagName(name: string) {
 		left: clamp(1rem, 4vw, 3rem);
 		bottom: clamp(1rem, 4vw, 3rem);
 		z-index: 3;
-		width: min(380px, calc(100% - 2rem));
-		padding: 0;
+		width: min(390px, calc(100% - 2rem));
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 1.1rem;
+		background:
+			linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06)),
+			rgba(18, 18, 27, 0.34);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.16),
+			0 24px 80px rgba(0, 0, 0, 0.32);
+		padding: 1rem;
 		color: white;
+		backdrop-filter: blur(18px) saturate(1.2);
+	}
+
+	.bio-kicker {
+		width: fit-content;
+		margin-bottom: 0.65rem;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.12);
+		padding: 0.2rem 0.58rem;
+		color: rgba(255, 255, 255, 0.68);
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
 	}
 
 	.name,
@@ -208,16 +301,31 @@ function getShortTagName(name: string) {
 	}
 
 	.name {
-		font-size: 1.05rem;
+		font-size: 1.25rem;
 		font-weight: 700;
 	}
 
 	.motto {
 		max-width: 330px;
 		margin-top: 0.38rem;
-		color: rgba(255, 255, 255, 0.72);
-		font-size: 0.88rem;
+		color: rgba(255, 255, 255, 0.74);
+		font-size: 0.9rem;
 		line-height: 1.72;
+	}
+
+	.bio-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin-top: 0.85rem;
+	}
+
+	.bio-meta span {
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.18rem 0.5rem;
+		color: rgba(255, 255, 255, 0.72);
+		font-size: 0.72rem;
 	}
 
 	.links {
@@ -229,11 +337,11 @@ function getShortTagName(name: string) {
 	.links a {
 		display: inline-grid;
 		place-items: center;
-		width: 36px;
-		height: 36px;
-		border: 1px solid rgba(255, 255, 255, 0.24);
-		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.11);
+		width: 38px;
+		height: 38px;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 0.8rem;
+		background: rgba(255, 255, 255, 0.1);
 		color: white;
 		backdrop-filter: blur(14px);
 	}
@@ -254,16 +362,12 @@ function getShortTagName(name: string) {
 	}
 
 	@media (max-width: 720px) {
-		body {
+		.home-body {
 			overflow: auto;
 		}
 
 		.home {
 			min-height: 100vh;
-		}
-
-		.tag-bubble {
-			opacity: 0.9;
 		}
 	}
 </style>

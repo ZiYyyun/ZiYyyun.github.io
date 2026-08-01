@@ -4,20 +4,31 @@
 @import '@fontsource/jetbrains-mono/400.css';
 
 :root {
-	--black: 23, 25, 30;
-	--gray-dark: 52, 58, 68;
-	--gray: 109, 119, 134;
-	--gray-light: 224, 228, 234;
-	--paper: 246, 244, 238;
-	--surface: 255, 255, 252;
-	--ink: #17191e;
-	--accent: #1d6f74;
-	--accent-strong: #114448;
-	--accent-warm: #bf6542;
-	--accent-violet: #6657a8;
-	--line: rgba(var(--black), 0.1);
-	--soft-shadow: 0 18px 54px rgba(20, 24, 31, 0.08);
-	--lift-shadow: 0 28px 80px rgba(20, 24, 31, 0.12);
+	--hue: 250;
+	--radius-large: 1rem;
+	--page-width: 1200px;
+	--black: 25, 25, 30;
+	--gray-dark: 45, 48, 58;
+	--gray: 117, 121, 132;
+	--gray-light: 226, 229, 236;
+	--paper: 243, 244, 248;
+	--surface: 255, 255, 255;
+	--primary: oklch(0.7 0.14 var(--hue));
+	--page-bg: oklch(0.95 0.01 var(--hue));
+	--card-bg: rgba(255, 255, 255, 0.84);
+	--btn-regular-bg: oklch(0.95 0.025 var(--hue));
+	--btn-regular-bg-hover: oklch(0.9 0.05 var(--hue));
+	--btn-regular-bg-active: oklch(0.85 0.08 var(--hue));
+	--btn-plain-bg-hover: oklch(0.95 0.025 var(--hue));
+	--btn-content: oklch(0.55 0.12 var(--hue));
+	--deep-text: oklch(0.25 0.02 var(--hue));
+	--line-color: rgba(0, 0, 0, 0.1);
+	--inline-code-bg: var(--btn-regular-bg);
+	--inline-code-color: var(--btn-content);
+	--link-underline: oklch(0.91 0.05 var(--hue));
+	--selection-bg: oklch(0.9 0.05 var(--hue));
+	--shadow-card: 0 2px 5px rgba(15, 18, 28, 0.05), 0 18px 50px rgba(35, 38, 58, 0.08);
+	--shadow-lift: 0 18px 60px rgba(35, 38, 58, 0.14);
 }
 
 * {
@@ -25,7 +36,8 @@
 }
 
 html {
-	background: rgb(var(--paper));
+	min-height: 100%;
+	background: var(--page-bg);
 	text-rendering: optimizeLegibility;
 }
 
@@ -33,10 +45,10 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background:
-		linear-gradient(180deg, rgba(255, 255, 252, 0.88), rgba(var(--paper), 1) 460px),
-		radial-gradient(circle at 12% 0%, rgba(191, 101, 66, 0.1), transparent 36rem),
-		radial-gradient(circle at 90% 12%, rgba(29, 111, 116, 0.1), transparent 34rem),
-		rgb(var(--paper));
+		linear-gradient(180deg, rgba(255, 255, 255, 0.2), var(--page-bg) 34rem),
+		radial-gradient(circle at 8% 0%, oklch(0.88 0.055 310 / 0.42), transparent 34rem),
+		radial-gradient(circle at 92% 10%, oklch(0.9 0.06 190 / 0.38), transparent 30rem),
+		var(--page-bg);
 	color: rgb(var(--gray-dark));
 	font-family: 'Noto Sans SC', var(--font-atkinson), system-ui, sans-serif;
 	font-size: 16px;
@@ -47,9 +59,9 @@ body {
 }
 
 main {
-	width: min(1080px, calc(100% - 2rem));
+	width: min(var(--page-width), calc(100% - 2rem));
 	margin: auto;
-	padding: 3rem 0;
+	padding: 2rem 0 4rem;
 }
 
 h1,
@@ -66,11 +78,11 @@ h6 {
 }
 
 h1 {
-	font-size: clamp(2.2rem, 6vw, 4.6rem);
+	font-size: clamp(2.2rem, 6vw, 4.5rem);
 }
 
 h2 {
-	font-size: clamp(1.45rem, 3vw, 2.15rem);
+	font-size: clamp(1.45rem, 3vw, 2.1rem);
 }
 
 h3 {
@@ -86,32 +98,31 @@ p {
 }
 
 a {
-	color: var(--accent);
+	color: var(--primary);
 	text-decoration-thickness: 1px;
-	text-underline-offset: 0.18em;
+	text-underline-offset: 0.22em;
 }
 
 a:hover {
-	color: var(--accent-warm);
+	color: var(--btn-content);
 }
 
 strong,
 b {
-	font-weight: 700;
 	color: rgb(var(--black));
+	font-weight: 700;
 }
 
 img {
 	max-width: 100%;
 	height: auto;
-	border-radius: 8px;
+	border-radius: 0.875rem;
 }
 
 code {
-	border: 1px solid rgba(var(--black), 0.06);
-	border-radius: 5px;
-	background: rgba(255, 255, 255, 0.72);
-	color: #234047;
+	border-radius: 0.45rem;
+	background: var(--inline-code-bg);
+	color: var(--inline-code-color);
 	font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
 	font-size: 0.88em;
 	padding: 0.1em 0.34em;
@@ -119,7 +130,7 @@ code {
 
 pre {
 	overflow: auto;
-	border-radius: 8px;
+	border-radius: 1rem;
 }
 
 table {
@@ -137,39 +148,225 @@ td {
 }
 
 th {
-	background: rgba(var(--paper), 0.62);
+	background: rgba(var(--paper), 0.7);
 	color: rgb(var(--black));
 	font-weight: 700;
 }
 
 blockquote {
+	position: relative;
 	margin: 1.9rem 0;
-	border-left: 3px solid var(--accent-warm);
-	padding: 0.25rem 0 0.25rem 1rem;
+	border: 0;
+	padding: 0.2rem 0 0.2rem 1.2rem;
 	color: rgb(var(--gray-dark));
-	background: linear-gradient(90deg, rgba(191, 101, 66, 0.08), transparent 70%);
 	font-size: 1rem;
+}
+
+blockquote::before {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 0.3rem;
+	height: 100%;
+	border-radius: 999px;
+	background: var(--btn-regular-bg-hover);
+	content: '';
 }
 
 hr {
 	border: 0;
-	border-top: 1px solid var(--line);
+	border-top: 1px dashed var(--line-color);
 	margin: 2.2rem 0;
 }
 
 ::selection {
-	background: rgba(191, 101, 66, 0.18);
+	background: var(--selection-bg);
 }
 
-@media (max-width: 720px) {
-	body {
-		font-size: 15px;
-	}
+.fuwari-card {
+	border: 1px solid rgba(255, 255, 255, 0.72);
+	border-radius: var(--radius-large);
+	background: var(--card-bg);
+	box-shadow: var(--shadow-card);
+	backdrop-filter: blur(18px) saturate(1.2);
+}
 
-	main {
-		width: min(100% - 1rem, 1080px);
-		padding: 1.5rem 0;
-	}
+.fuwari-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: 0.75rem;
+	background: var(--btn-regular-bg);
+	color: var(--btn-content);
+	text-decoration: none;
+	transition:
+		background 0.2s ease,
+		color 0.2s ease,
+		transform 0.2s ease;
+}
+
+.fuwari-button:hover {
+	background: var(--btn-regular-bg-hover);
+	color: var(--primary);
+	transform: translateY(-1px);
+}
+
+.fuwari-link {
+	border-radius: 0.55rem;
+	text-decoration: underline;
+	text-decoration-color: var(--link-underline);
+	text-decoration-style: dashed;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.25rem;
+}
+
+.fuwari-link:hover {
+	background: var(--btn-plain-bg-hover);
+	text-decoration-color: transparent;
+}
+
+.markdown-body {
+	color: rgb(var(--gray-dark));
+	font-size: clamp(1rem, 1.25vw, 1.06rem);
+	line-height: 1.96;
+}
+
+.markdown-body :is(h1, h2, h3, h4, h5, h6) {
+	scroll-margin-top: 5.5rem;
+}
+
+.markdown-body h2 {
+	margin-top: 2.7rem;
+	border-top: 1px dashed var(--line-color);
+	padding-top: 1.35rem;
+}
+
+.markdown-body h2::before {
+	display: inline-block;
+	width: 0.38rem;
+	height: 1.05em;
+	margin-right: 0.55rem;
+	border-radius: 999px;
+	background: var(--primary);
+	vertical-align: -0.14em;
+	content: '';
+}
+
+.markdown-body h3 {
+	margin-top: 2rem;
+}
+
+.markdown-body h3::before {
+	color: var(--primary);
+	content: '# ';
+}
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol {
+	margin-bottom: 1.2rem;
+}
+
+.markdown-body p {
+	max-width: 74ch;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+	padding-left: 1.45rem;
+}
+
+.markdown-body li::marker {
+	color: var(--primary);
+}
+
+.markdown-body li + li {
+	margin-top: 0.35rem;
+}
+
+.markdown-body input[type='checkbox'] {
+	width: 1rem;
+	height: 1rem;
+	margin-right: 0.35rem;
+	accent-color: var(--primary);
+	vertical-align: -0.12em;
+}
+
+.markdown-body a {
+	border-radius: 0.3rem;
+	font-weight: 500;
+	text-decoration-color: var(--link-underline);
+	text-decoration-style: dashed;
+}
+
+.markdown-body a:hover {
+	background: var(--btn-plain-bg-hover);
+	text-decoration-color: transparent;
+}
+
+.markdown-body img {
+	display: block;
+	margin: 1.8rem auto;
+	box-shadow: 0 18px 48px rgba(30, 34, 52, 0.12);
+}
+
+.markdown-body kbd {
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border-bottom-width: 2px;
+	border-radius: 0.45rem;
+	background: rgba(255, 255, 255, 0.75);
+	padding: 0.08rem 0.35rem;
+	color: rgb(var(--gray-dark));
+	font-family: 'JetBrains Mono', ui-monospace, monospace;
+	font-size: 0.82em;
+}
+
+.markdown-body mark {
+	border-radius: 0.35rem;
+	background: oklch(0.88 0.08 90 / 0.55);
+	padding: 0.02rem 0.24rem;
+}
+
+.markdown-body details {
+	margin: 1.4rem 0;
+	border: 1px solid rgba(0, 0, 0, 0.08);
+	border-radius: 0.9rem;
+	background: rgba(255, 255, 255, 0.52);
+	padding: 0.85rem 1rem;
+}
+
+.markdown-body summary {
+	cursor: pointer;
+	color: rgb(var(--black));
+	font-weight: 700;
+}
+
+.markdown-body table {
+	display: block;
+	margin: 1.6rem 0;
+	overflow-x: auto;
+	border: 1px solid rgba(var(--gray-light), 0.95);
+	border-radius: 0.75rem;
+	background: white;
+}
+
+.markdown-body tbody tr:hover {
+	background: oklch(0.97 0.012 var(--hue));
+}
+
+.markdown-body pre {
+	margin: 1.6rem 0;
+}
+
+.markdown-body pre code {
+	border: 0;
+	background: transparent;
+	padding: 0;
+}
+
+.markdown-body .expressive-code {
+	margin: 1.6rem 0;
 }
 
 .sr-only {
@@ -183,4 +380,15 @@ hr {
 	clip-path: inset(50%);
 	border: 0;
 	white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+	body {
+		font-size: 15px;
+	}
+
+	main {
+		width: min(100% - 1rem, var(--page-width));
+		padding: 1rem 0 3rem;
+	}
 }

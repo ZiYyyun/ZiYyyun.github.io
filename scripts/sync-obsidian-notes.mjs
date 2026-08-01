@@ -11,7 +11,6 @@ import {
 } from 'node:fs';
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import iconv from 'iconv-lite';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoUrl = process.env.OBSIDIAN_REPO_URL ?? 'https://github.com/ZiYyyun/ZiYyun-ObsidianUnivrse.git';
@@ -25,26 +24,6 @@ const dryRun = process.env.OBSIDIAN_SYNC_DRY_RUN === '1';
 
 function run(command, args, options = {}) {
 	execFileSync(command, args, { stdio: 'inherit', ...options });
-}
-
-function mojibakeScore(value) {
-	const matches = value.match(/[锛涓鐨瀵绋搷馃銆庝佷]/g);
-	return matches ? matches.length : 0;
-}
-
-function repairMojibake(value) {
-	const score = mojibakeScore(value);
-	if (score < 4) return value;
-
-	const repaired = iconv.decode(iconv.encode(value, 'gb18030'), 'utf8');
-	const repairedScore = mojibakeScore(repaired);
-	const usefulCjk = repaired.match(/[\u4e00-\u9fff]/g)?.length ?? 0;
-
-	return repairedScore < score / 3 && usefulCjk > 0 ? repaired : value;
-}
-
-function readMarkdownText(file) {
-	return repairMojibake(readFileSync(file, 'utf8'));
 }
 
 function getVaultPath() {
@@ -105,7 +84,7 @@ function parseBaseTags(content) {
 }
 
 function fileHasTag(file, tag) {
-	const content = readMarkdownText(file);
+	const content = readFileSync(file, 'utf8');
 	const bareTag = tag.replace(/^#/, '');
 	const escaped = bareTag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	const tagPattern = new RegExp(`(^|\\s)#${escaped}(?=\\s|$)`, 'm');
@@ -320,7 +299,7 @@ function extractObsidianTags(body) {
 }
 
 function toBlogMarkdown(file, vaultPath, assetIndex, copiedAssets, publishedLinks) {
-	const original = readMarkdownText(file);
+	const original = readFileSync(file, 'utf8');
 	const { frontmatter, body } = parseFrontmatter(original);
 	const relativePath = normalizePath(relative(vaultPath, file));
 	const title = stripMdExtension(basename(file));
@@ -353,7 +332,7 @@ function syncNotes() {
 		return;
 	}
 
-	const manifestContent = readMarkdownText(manifest);
+	const manifestContent = readFileSync(manifest, 'utf8');
 	const baseTags = parseBaseTags(manifestContent);
 	const entries = parseManifest(manifestContent);
 	if (entries.length === 0 && baseTags.length === 0) {

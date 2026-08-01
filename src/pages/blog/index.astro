@@ -1,10 +1,10 @@
 ---
-import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import Header from '../../components/Header.astro';
+import ProfileCard from '../../components/ProfileCard.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../../consts';
 
 const posts = (await getCollection('blog')).sort(
@@ -22,223 +22,273 @@ const rest = posts.slice(1);
 	</head>
 	<body>
 		<Header />
-		<main>
-			<section class="archive-hero">
-				<p>Published Notes</p>
-				<h1>笔记索引</h1>
-				<span>{posts.length} 篇已发布笔记</span>
-			</section>
+		<main class="blog-page">
+			<div class="blog-grid">
+				<ProfileCard />
 
-			{
-				featured && (
-					<section class="featured">
-						<a href={`${baseUrl}blog/${featured.id}/`}>
-							<div>
-								<span class="label">Latest</span>
-								<h2>{featured.data.title}</h2>
-								<p>{featured.data.description}</p>
-								<small><FormattedDate date={featured.data.pubDate} /></small>
-							</div>
-							{featured.data.heroImage && typeof featured.data.heroImage !== 'string' && (
-								<Image width={560} height={320} src={featured.data.heroImage} alt="" />
-							)}
-							{typeof featured.data.heroImage === 'string' &&
-								(featured.data.heroImage.startsWith('/') || featured.data.heroImage.startsWith('http')) && (
-									<img src={featured.data.heroImage} alt="" />
-								)}
-						</a>
+				<section class="content-column">
+					<header class="page-heading">
+						<p class="eyebrow">Published Notes</p>
+						<h1>笔记索引</h1>
+						<p>{posts.length} 篇从 Obsidian 同步过来的长期笔记。</p>
+					</header>
+
+					{
+						featured && (
+							<article class="featured fuwari-card">
+								<div class="featured-copy">
+									<span class="label">Latest</span>
+									<h2><a href={`${baseUrl}blog/${featured.id}/`}>{featured.data.title}</a></h2>
+									<p>{featured.data.description}</p>
+									<div class="post-meta">
+										<FormattedDate date={featured.data.pubDate} />
+										<span>·</span>
+										<span>{featured.data.tags?.slice(0, 3).join(' / ')}</span>
+									</div>
+								</div>
+								<a class="featured-arrow fuwari-button" href={`${baseUrl}blog/${featured.id}/`} aria-label={`阅读 ${featured.data.title}`}>
+									<span>→</span>
+								</a>
+							</article>
+						)
+					}
+
+					<section class="post-list" aria-label="全部笔记">
+						{
+							rest.map((post) => (
+								<article class="post-card fuwari-card">
+									<a class="post-card-main" href={`${baseUrl}blog/${post.id}/`}>
+										<h2>{post.data.title}</h2>
+										<div class="post-meta">
+											<FormattedDate date={post.data.pubDate} />
+											{post.data.tags?.slice(0, 2).map((tag) => <span class="tag">#{tag}</span>)}
+										</div>
+										<p>{post.data.description}</p>
+									</a>
+									<a class="post-card-arrow fuwari-button" href={`${baseUrl}blog/${post.id}/`} aria-label={`阅读 ${post.data.title}`}>
+										→
+									</a>
+								</article>
+							))
+						}
 					</section>
-				)
-			}
-
-			<section class="post-grid" aria-label="全部笔记">
-				{
-					rest.map((post) => (
-						<article>
-							<a href={`${baseUrl}blog/${post.id}/`}>
-								<time datetime={post.data.pubDate.toISOString()}>
-									<FormattedDate date={post.data.pubDate} />
-								</time>
-								<h2>{post.data.title}</h2>
-								<p>{post.data.description}</p>
-							</a>
-						</article>
-					))
-				}
-			</section>
+				</section>
+			</div>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	main {
-		width: min(1160px, calc(100% - 2rem));
+	.blog-page {
+		padding-top: 2rem;
 	}
 
-	.archive-hero {
+	.blog-grid {
 		display: grid;
-		gap: 0.25rem;
-		margin: 2rem 0 2.2rem;
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
 	}
 
-	.archive-hero p {
-		margin: 0;
-		color: var(--accent);
+	.content-column {
+		min-width: 0;
+	}
+
+	.page-heading {
+		margin: 0.6rem 0 1.2rem;
+		padding: 0 0.25rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.35rem;
+		color: var(--primary);
 		font-size: 0.76rem;
 		font-weight: 700;
 		text-transform: uppercase;
 	}
 
-	.archive-hero h1 {
-		margin: 0;
+	.page-heading h1 {
+		margin-bottom: 0.45rem;
+		font-size: clamp(2.2rem, 5vw, 3.6rem);
 	}
 
-	.archive-hero span {
+	.page-heading p:last-child {
+		margin: 0;
 		color: rgb(var(--gray));
 		font-size: 0.92rem;
 	}
 
 	.featured {
-		margin-bottom: 1rem;
-	}
-
-	.featured a {
-		display: grid;
-		grid-template-columns: minmax(0, 1.08fr) minmax(240px, 0.72fr);
+		position: relative;
+		display: flex;
+		align-items: stretch;
+		justify-content: space-between;
 		gap: 1rem;
-		min-height: 300px;
-		border: 1px solid rgba(var(--black), 0.075);
-		border-radius: 8px;
+		min-height: 220px;
+		margin-bottom: 1rem;
+		padding: 1.6rem 1.6rem 1.6rem 2rem;
+		overflow: hidden;
 		background:
-			linear-gradient(135deg, rgba(29, 111, 116, 0.12), transparent 46%),
-			linear-gradient(315deg, rgba(191, 101, 66, 0.1), transparent 42%),
-			rgba(var(--surface), 0.88);
-		box-shadow: var(--soft-shadow);
-		padding: clamp(1.25rem, 3vw, 2.1rem);
-		color: inherit;
-		text-decoration: none;
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
+			linear-gradient(135deg, oklch(0.93 0.06 255 / 0.8), transparent 58%),
+			var(--card-bg);
 	}
 
-	.featured a:hover {
-		box-shadow: var(--lift-shadow);
-		transform: translateY(-2px);
+	.featured::before {
+		position: absolute;
+		left: 1rem;
+		top: 2rem;
+		bottom: 2rem;
+		width: 0.3rem;
+		border-radius: 999px;
+		background: var(--primary);
+		content: '';
 	}
 
-	.featured a > div {
+	.featured-copy {
 		display: flex;
 		flex-direction: column;
 		justify-content: flex-end;
+		min-width: 0;
 	}
 
 	.label {
 		width: fit-content;
-		border: 1px solid rgba(var(--black), 0.12);
-		border-radius: 999px;
-		padding: 0.22rem 0.62rem;
-		color: rgb(var(--gray));
+		border-radius: 0.55rem;
+		background: var(--btn-regular-bg);
+		padding: 0.28rem 0.6rem;
+		color: var(--btn-content);
 		font-size: 0.72rem;
 		font-weight: 700;
 		text-transform: uppercase;
 	}
 
 	.featured h2 {
-		max-width: 650px;
-		margin: 1rem 0 0.8rem;
-		font-size: clamp(1.75rem, 4.8vw, 3.4rem);
-		line-height: 1.04;
+		max-width: 700px;
+		margin: 1rem 0 0.55rem;
+		font-size: clamp(1.65rem, 4vw, 2.8rem);
+		line-height: 1.1;
 	}
 
-	.featured p {
-		max-width: 620px;
-		color: rgb(var(--gray));
-		line-height: 1.72;
-	}
-
-	.featured small {
-		color: rgb(var(--gray));
-		font-size: 0.84rem;
-	}
-
-	.featured img {
-		align-self: stretch;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.post-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 1rem;
-	}
-
-	article a {
-		display: grid;
-		grid-template-rows: auto auto 1fr;
-		min-height: 218px;
-		border: 1px solid rgba(var(--black), 0.075);
-		border-radius: 8px;
-		background: rgba(var(--surface), 0.78);
-		box-shadow: 0 12px 34px rgba(24, 30, 38, 0.05);
-		padding: 1rem;
-		color: inherit;
+	.featured h2 a {
+		color: rgb(var(--black));
 		text-decoration: none;
-		transition:
-			transform 0.2s ease,
-			box-shadow 0.2s ease,
-			border-color 0.2s ease;
 	}
 
-	article a:hover {
-		border-color: rgba(29, 111, 116, 0.36);
-		box-shadow: var(--soft-shadow);
-		transform: translateY(-2px);
+	.featured h2 a:hover {
+		color: var(--primary);
 	}
 
-	time {
+	.featured-copy > p {
+		max-width: 650px;
+		margin: 0 0 1rem;
+		color: rgb(var(--gray));
+	}
+
+	.post-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
 		color: rgb(var(--gray));
 		font-size: 0.78rem;
 	}
 
-	article h2 {
-		margin-top: 1.15rem;
-		font-size: 1.14rem;
-		line-height: 1.34;
+	.tag {
+		border-radius: 0.45rem;
+		background: var(--btn-regular-bg);
+		padding: 0.14rem 0.42rem;
+		color: var(--btn-content);
 	}
 
-	article p {
-		align-self: end;
+	.featured-arrow,
+	.post-card-arrow {
+		flex: 0 0 auto;
+		align-self: center;
+		width: 3.25rem;
+		height: 5rem;
+		font-size: 1.9rem;
+	}
+
+	.post-list {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.post-card {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 3.25rem;
+		gap: 1rem;
+		padding: 0.35rem;
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.post-card:hover {
+		box-shadow: var(--shadow-lift);
+		transform: translateY(-2px);
+	}
+
+	.post-card-main {
+		display: block;
+		padding: 1rem 1.15rem;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.post-card h2 {
+		margin: 0 0 0.55rem;
+		font-size: 1.2rem;
+		line-height: 1.36;
+	}
+
+	.post-card-main:hover h2 {
+		color: var(--primary);
+	}
+
+	.post-card p {
 		display: -webkit-box;
-		margin: 0;
+		margin: 0.8rem 0 0;
 		color: rgb(var(--gray));
 		font-size: 0.88rem;
-		line-height: 1.62;
+		line-height: 1.6;
 		overflow: hidden;
 		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 3;
+		-webkit-line-clamp: 2;
 	}
 
-	@media (max-width: 920px) {
-		.featured a {
-			grid-template-columns: 1fr;
-		}
+	.post-card-arrow {
+		height: auto;
+		margin: 0.45rem;
+	}
 
-		.post-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+	@media (max-width: 980px) {
+		.blog-grid {
+			grid-template-columns: 1fr;
 		}
 	}
 
-	@media (max-width: 620px) {
-		main {
-			width: min(100% - 1rem, 1160px);
+	@media (max-width: 560px) {
+		.featured {
+			padding: 1.25rem 1.1rem 1.25rem 1.6rem;
 		}
 
-		.post-grid {
-			grid-template-columns: 1fr;
+		.featured::before {
+			left: 0.7rem;
+		}
+
+		.featured-arrow {
+			width: 2.8rem;
+		}
+
+		.post-card {
+			grid-template-columns: minmax(0, 1fr) 2.6rem;
+		}
+
+		.post-card-arrow {
+			width: 2.6rem;
 		}
 	}
 </style>

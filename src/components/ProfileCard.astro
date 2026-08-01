@@ -1,0 +1,129 @@
+---
+import { Code, Mail, MessageCircle, Rss } from '@lucide/astro';
+import Avatar from '../assets/fuwari-avatar.png';
+
+const baseUrl = import.meta.env.BASE_URL;
+---
+
+<aside class="profile fuwari-card">
+	<a class="avatar-link" href={`${baseUrl}about/`} aria-label="About ZiYyun">
+		<img src={Avatar.src} alt="ZiYyun avatar" />
+	</a>
+	<div class="profile-body">
+		<h2>ZiYyun</h2>
+		<div class="accent-line"></div>
+		<p>长期笔记、代码实践、嵌入式系统和一点日常思考。</p>
+		<div class="links" aria-label="Profile links">
+			<a class="fuwari-button" href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
+				<Code size={19} />
+			</a>
+			<a class="fuwari-button" href="mailto:1583931339@qq.com" aria-label="Email">
+				<Mail size={19} />
+			</a>
+			<a class="fuwari-button" href={`${baseUrl}rss.xml`} aria-label="RSS">
+				<Rss size={19} />
+			</a>
+			<a class="fuwari-button" href={`${baseUrl}about/`} aria-label="About">
+				<MessageCircle size={19} />
+			</a>
+		</div>
+	</div>
+</aside>
+
+<style>
+	.profile {
+		position: sticky;
+		top: 5.5rem;
+		padding: 0.75rem;
+	}
+
+	.avatar-link {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		border-radius: 0.9rem;
+		background: var(--btn-regular-bg);
+		text-decoration: none;
+	}
+
+	.avatar-link::after {
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0);
+		content: '';
+		transition: background 0.2s ease;
+	}
+
+	.avatar-link:hover::after {
+		background: rgba(0, 0, 0, 0.18);
+	}
+
+	img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 1;
+		border-radius: 0;
+		object-fit: cover;
+	}
+
+	.profile-body {
+		padding: 0.85rem 0.35rem 0.35rem;
+		text-align: center;
+	}
+
+	h2 {
+		margin: 0;
+		font-size: 1.24rem;
+	}
+
+	.accent-line {
+		width: 1.4rem;
+		height: 0.28rem;
+		margin: 0.45rem auto 0.65rem;
+		border-radius: 999px;
+		background: var(--primary);
+	}
+
+	p {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.9rem;
+		line-height: 1.65;
+	}
+
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+
+	.links a {
+		width: 2.5rem;
+		height: 2.5rem;
+	}
+
+	@media (max-width: 980px) {
+		.profile {
+			position: static;
+			display: grid;
+			grid-template-columns: 6.5rem minmax(0, 1fr);
+			gap: 0.9rem;
+			align-items: center;
+		}
+
+		.profile-body {
+			padding: 0;
+			text-align: left;
+		}
+
+		.accent-line {
+			margin-left: 0;
+		}
+
+		.links {
+			justify-content: flex-start;
+		}
+	}
+</style>

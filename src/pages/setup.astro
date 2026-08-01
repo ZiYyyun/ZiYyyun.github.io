@@ -1,0 +1,140 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import ProfileCard from '../components/ProfileCard.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const devItems = [
+	'Node.js 22+',
+	'Astro',
+	'bun / npm',
+	'VS Code',
+	'GitHub Actions',
+];
+
+const gearItems = [
+	'主力笔记本',
+	'桌面开发机',
+	'键盘 / 鼠标 / 显示器',
+	'系统镜像与备份',
+];
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`设备 - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="page">
+			<div class="page-grid">
+				<ProfileCard />
+				<section class="content-column">
+					<header class="page-heading">
+						<p class="eyebrow">Dev Setup</p>
+						<h1>开发环境与设备</h1>
+						<p>后面可以把你的电脑配置、终端工具链和常用环境都塞进来。</p>
+					</header>
+
+					<section class="setup-section fuwari-card">
+						<h2>开发环境</h2>
+						<div class="chips">
+							{devItems.map((item) => <span>{item}</span>)}
+						</div>
+					</section>
+
+					<section class="setup-section fuwari-card">
+						<h2>设备清单</h2>
+						<div class="chips">
+							{gearItems.map((item) => <span>{item}</span>)}
+						</div>
+					</section>
+
+					<section class="setup-section fuwari-card">
+						<h2>未来扩展</h2>
+						<p>这页也可以扩成桌面、笔记本、显示器、路由器、NAS 和工作流配置卡片。</p>
+					</section>
+				</section>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.page {
+		padding-top: 2rem;
+	}
+
+	.page-grid {
+		display: grid;
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.content-column {
+		min-width: 0;
+		display: grid;
+		gap: 1rem;
+	}
+
+	.page-heading {
+		padding: 0 0.25rem;
+	}
+
+	.eyebrow {
+		margin: 0 0 0.35rem;
+		color: var(--primary);
+		font-size: 0.76rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+
+	.page-heading h1 {
+		margin-bottom: 0.45rem;
+		font-size: clamp(2.2rem, 5vw, 3.6rem);
+	}
+
+	.page-heading p:last-child {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.92rem;
+	}
+
+	.setup-section {
+		padding: 1rem 1.1rem;
+	}
+
+	.setup-section h2 {
+		margin-bottom: 0.65rem;
+		font-size: 1.15rem;
+	}
+
+	.chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+
+	.chips span {
+		border-radius: 999px;
+		background: var(--btn-regular-bg);
+		padding: 0.18rem 0.55rem;
+		color: var(--btn-content);
+		font-size: 0.74rem;
+	}
+
+	.setup-section p {
+		margin: 0;
+		color: rgb(var(--gray));
+	}
+
+	@media (max-width: 980px) {
+		.page-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
