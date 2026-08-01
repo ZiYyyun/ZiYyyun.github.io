@@ -27,12 +27,13 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 	</head>
 
 	<body>
+		<div class="reading-progress" aria-hidden="true"><span></span></div>
 		<Header />
 		<main class="post-page">
 			<div class:list={['post-grid', { 'without-graph': !graph }]}>
 				<ProfileCard />
 
-				<article class="post-card fuwari-card">
+				<article class="post-card firefly-card">
 					<header class="post-heading">
 						<p class="eyebrow">Notebook</p>
 						<h1>{title}</h1>
@@ -62,28 +63,68 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 			</div>
 		</main>
 		<Footer />
+		<script>
+			const progressBar = document.querySelector('.reading-progress span');
+			const article = document.querySelector('.post-card');
+			let progressFrame = 0;
+			function updateReadingProgress() {
+				progressFrame = 0;
+				if (!progressBar || !article) return;
+				const rect = article.getBoundingClientRect();
+				const distance = Math.max(article.scrollHeight - window.innerHeight * 0.45, 1);
+				const progress = Math.min(Math.max(-rect.top / distance, 0), 1);
+				progressBar.style.transform = `scaleX(${progress})`;
+			}
+			window.addEventListener('scroll', () => {
+				if (progressFrame) return;
+				progressFrame = window.requestAnimationFrame(updateReadingProgress);
+			}, { passive: true });
+			updateReadingProgress();
+		</script>
 	</body>
 </html>
 
 <style>
 	.post-page {
+		width: min(1440px, calc(100% - 2rem));
 		padding-top: 2rem;
 	}
 
 	.post-grid {
 		display: grid;
-		grid-template-columns: 16.5rem minmax(0, 1fr) 18rem;
-		gap: 1rem;
+		grid-template-columns: 13.5rem minmax(0, 780px) 19rem;
+		justify-content: center;
+		gap: 1.2rem;
 		align-items: start;
 	}
 
 	.post-grid.without-graph {
-		grid-template-columns: 16.5rem minmax(0, 1fr);
+		grid-template-columns: 13.5rem minmax(0, 820px);
 	}
 
 	.post-card {
 		min-width: 0;
 		overflow: hidden;
+	}
+
+	.reading-progress {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 100;
+		width: 100%;
+		height: 3px;
+		pointer-events: none;
+	}
+
+	.reading-progress span {
+		display: block;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(90deg, oklch(0.68 0.15 250), oklch(0.72 0.13 165));
+		transform: scaleX(0);
+		transform-origin: left;
+		will-change: transform;
 	}
 
 	.post-heading {
@@ -301,13 +342,147 @@ const heroImageIsImported = heroImage && !heroImageIsString;
 		margin: 1.6rem 0;
 	}
 
+	/* The note body is deliberately calmer and wider than the surrounding chrome. */
+	.prose {
+		padding: 1.8rem clamp(1.35rem, 4vw, 2.8rem) 3rem;
+		color: oklch(0.32 0.018 265);
+		font-size: clamp(1rem, 0.4vw + 0.94rem, 1.08rem);
+		line-height: 1.92;
+	}
+
+	.prose :global(p) {
+		max-width: 72ch;
+		margin: 0 0 1.35rem;
+	}
+
+	.prose :global(h2) {
+		position: relative;
+		margin: 3.2rem 0 1.15rem;
+		border-top: 0;
+		padding: 0 0 0 1rem;
+		font-size: clamp(1.38rem, 1.2vw + 1rem, 1.9rem);
+		line-height: 1.35;
+	}
+
+	.prose :global(h2)::before {
+		position: absolute;
+		left: 0;
+		top: 0.18em;
+		display: block;
+		width: 0.28rem;
+		height: 0.9em;
+		margin: 0;
+		border-radius: 999px;
+		background: linear-gradient(180deg, var(--primary), oklch(0.7 0.13 165));
+		content: '';
+	}
+
+	.prose :global(h3) {
+		margin: 2.2rem 0 0.75rem;
+		font-size: 1.25rem;
+	}
+
+	.prose :global(h3)::before {
+		margin-right: 0.35rem;
+		color: oklch(0.7 0.13 165);
+		content: '✦';
+		font-size: 0.72em;
+	}
+
+	.prose :global(h4) {
+		margin-top: 1.7rem;
+		font-size: 1.06rem;
+	}
+
+	.prose :global(ul),
+	.prose :global(ol) {
+		max-width: 70ch;
+		margin: 0 0 1.35rem;
+		padding-left: 1.5rem;
+	}
+
+	.prose :global(li) {
+		padding-left: 0.2rem;
+	}
+
+	.prose :global(li + li) {
+		margin-top: 0.45rem;
+	}
+
+	.prose :global(blockquote) {
+		max-width: 70ch;
+		margin: 1.8rem 0;
+		border: 1px solid rgba(100, 105, 125, 0.14);
+		border-left: 4px solid oklch(0.7 0.13 165);
+		border-radius: 0 8px 8px 0;
+		background: linear-gradient(100deg, oklch(0.96 0.025 165), rgba(255, 255, 255, 0.5));
+		padding: 1rem 1.15rem;
+		color: rgb(var(--gray-dark));
+	}
+
+	.prose :global(blockquote p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.prose :global(:not(pre) > code) {
+		border: 1px solid rgba(100, 105, 125, 0.12);
+		background: oklch(0.94 0.025 250);
+		color: oklch(0.46 0.13 250);
+		font-size: 0.84em;
+	}
+
+	.prose :global(pre) {
+		margin: 1.8rem 0;
+		border: 1px solid rgba(30, 32, 42, 0.1);
+		box-shadow: 0 18px 42px rgba(30, 34, 52, 0.1);
+	}
+
+	.prose :global(.expressive-code) {
+		margin: 1.8rem 0;
+	}
+
+	.prose :global(img) {
+		max-height: 680px;
+		border-radius: 8px;
+		object-fit: contain;
+	}
+
+	.prose :global(figure) {
+		margin: 1.8rem 0;
+	}
+
+	.prose :global(figcaption) {
+		margin-top: -1rem;
+		color: rgb(var(--gray));
+		font-size: 0.78rem;
+		text-align: center;
+	}
+
+	.prose :global(table) {
+		margin: 1.8rem 0;
+		border-color: rgba(100, 105, 125, 0.16);
+		box-shadow: 0 10px 28px rgba(30, 34, 52, 0.05);
+	}
+
+	.prose :global(th) {
+		background: oklch(0.94 0.025 250);
+		font-size: 0.82rem;
+	}
+
+	.prose :global(hr) {
+		max-width: 72ch;
+		margin: 2.8rem 0;
+		border-top-style: solid;
+		border-top-color: rgba(100, 105, 125, 0.18);
+	}
+
 	@media (max-width: 1180px) {
 		.post-grid {
-			grid-template-columns: 14rem minmax(0, 1fr) 16rem;
+			grid-template-columns: 12rem minmax(0, 1fr) 16rem;
 		}
 
 		.post-grid.without-graph {
-			grid-template-columns: 14rem minmax(0, 1fr);
+			grid-template-columns: 12rem minmax(0, 1fr);
 		}
 	}
 

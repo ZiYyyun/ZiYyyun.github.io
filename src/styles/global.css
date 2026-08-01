@@ -4,31 +4,62 @@
 @import '@fontsource/jetbrains-mono/400.css';
 
 :root {
-	--hue: 250;
+	--hue: 165;
 	--radius-large: 1rem;
-	--page-width: 1200px;
-	--black: 25, 25, 30;
-	--gray-dark: 45, 48, 58;
-	--gray: 117, 121, 132;
-	--gray-light: 226, 229, 236;
-	--paper: 243, 244, 248;
+	--page-width: 1380px;
+	--black: 28, 35, 34;
+	--gray-dark: 52, 61, 60;
+	--gray: 116, 127, 125;
+	--gray-light: 222, 232, 229;
+	--paper: 241, 248, 245;
 	--surface: 255, 255, 255;
 	--primary: oklch(0.7 0.14 var(--hue));
-	--page-bg: oklch(0.95 0.01 var(--hue));
-	--card-bg: rgba(255, 255, 255, 0.84);
+	--primary-hover: oklch(0.64 0.15 var(--hue));
+	--page-bg: oklch(0.965 0.018 var(--hue));
+	--card-bg: rgba(255, 255, 255, 0.92);
+	--card-bg-transparent: rgba(255, 255, 255, 0.72);
 	--btn-regular-bg: oklch(0.95 0.025 var(--hue));
 	--btn-regular-bg-hover: oklch(0.9 0.05 var(--hue));
 	--btn-regular-bg-active: oklch(0.85 0.08 var(--hue));
 	--btn-plain-bg-hover: oklch(0.95 0.025 var(--hue));
 	--btn-content: oklch(0.55 0.12 var(--hue));
-	--deep-text: oklch(0.25 0.02 var(--hue));
+	--deep-text: oklch(0.27 0.025 var(--hue));
 	--line-color: rgba(0, 0, 0, 0.1);
 	--inline-code-bg: var(--btn-regular-bg);
 	--inline-code-color: var(--btn-content);
 	--link-underline: oklch(0.91 0.05 var(--hue));
 	--selection-bg: oklch(0.9 0.05 var(--hue));
-	--shadow-card: 0 2px 5px rgba(15, 18, 28, 0.05), 0 18px 50px rgba(35, 38, 58, 0.08);
-	--shadow-lift: 0 18px 60px rgba(35, 38, 58, 0.14);
+	--shadow-card: 0 2px 5px rgba(23, 53, 45, 0.035), 0 16px 44px rgba(43, 91, 78, 0.07);
+	--shadow-lift: 0 18px 54px rgba(35, 91, 75, 0.13);
+	--line-divider: rgba(25, 70, 57, 0.09);
+}
+
+:root.dark {
+	color-scheme: dark;
+	--black: 239, 246, 244;
+	--gray-dark: 205, 218, 214;
+	--gray: 143, 160, 155;
+	--gray-light: 53, 69, 65;
+	--paper: 30, 41, 38;
+	--surface: 31, 42, 39;
+	--primary: oklch(0.76 0.13 var(--hue));
+	--primary-hover: oklch(0.82 0.12 var(--hue));
+	--page-bg: oklch(0.17 0.016 var(--hue));
+	--card-bg: rgba(31, 43, 40, 0.94);
+	--card-bg-transparent: rgba(26, 38, 34, 0.76);
+	--btn-regular-bg: oklch(0.28 0.035 var(--hue));
+	--btn-regular-bg-hover: oklch(0.34 0.05 var(--hue));
+	--btn-regular-bg-active: oklch(0.4 0.06 var(--hue));
+	--btn-plain-bg-hover: oklch(0.29 0.03 var(--hue));
+	--btn-content: oklch(0.79 0.11 var(--hue));
+	--deep-text: oklch(0.9 0.018 var(--hue));
+	--line-color: rgba(255, 255, 255, 0.1);
+	--line-divider: rgba(255, 255, 255, 0.09);
+	--inline-code-bg: var(--btn-regular-bg);
+	--link-underline: oklch(0.37 0.06 var(--hue));
+	--selection-bg: oklch(0.4 0.08 var(--hue));
+	--shadow-card: 0 14px 44px rgba(0, 0, 0, 0.2);
+	--shadow-lift: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -44,11 +75,7 @@ html {
 body {
 	min-height: 100vh;
 	margin: 0;
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.2), var(--page-bg) 34rem),
-		radial-gradient(circle at 8% 0%, oklch(0.88 0.055 310 / 0.42), transparent 34rem),
-		radial-gradient(circle at 92% 10%, oklch(0.9 0.06 190 / 0.38), transparent 30rem),
-		var(--page-bg);
+	background: linear-gradient(145deg, oklch(0.97 0.02 165), oklch(0.95 0.018 205) 58%, var(--page-bg));
 	color: rgb(var(--gray-dark));
 	font-family: 'Noto Sans SC', var(--font-atkinson), system-ui, sans-serif;
 	font-size: 16px;
@@ -56,6 +83,10 @@ body {
 	text-align: left;
 	word-wrap: break-word;
 	overflow-wrap: break-word;
+}
+
+:root.dark body {
+	background: linear-gradient(145deg, oklch(0.18 0.018 165), oklch(0.15 0.014 220));
 }
 
 main {
@@ -183,15 +214,147 @@ hr {
 	background: var(--selection-bg);
 }
 
-.fuwari-card {
-	border: 1px solid rgba(255, 255, 255, 0.72);
+@media (pointer: fine) {
+	html.site-cursor-ready,
+	html.site-cursor-ready * {
+		cursor: none !important;
+	}
+
+	.site-cursor {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 2147483647;
+		width: 0;
+		height: 0;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 180ms ease;
+		will-change: transform;
+	}
+
+	.site-cursor.is-visible {
+		opacity: 1;
+	}
+
+	.site-cursor__ring,
+	.site-cursor__dot,
+	.site-cursor__spark {
+		position: absolute;
+		left: 0;
+		top: 0;
+		border-radius: 999px;
+		transform: translate(-50%, -50%);
+		pointer-events: none;
+	}
+
+	.site-cursor__ring {
+		width: 34px;
+		height: 34px;
+		border: 1px solid color-mix(in srgb, var(--primary) 72%, white 28%);
+		background:
+			radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.8), transparent 28%),
+			color-mix(in srgb, var(--primary) 16%, transparent);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+			0 10px 26px color-mix(in srgb, var(--primary) 26%, transparent),
+			0 0 22px color-mix(in srgb, var(--primary) 22%, transparent);
+		backdrop-filter: blur(3px) saturate(1.25);
+		transition:
+			width 180ms ease,
+			height 180ms ease,
+			border-color 180ms ease,
+			background 180ms ease,
+			transform 180ms ease;
+	}
+
+	.site-cursor__dot {
+		width: 7px;
+		height: 7px;
+		background: color-mix(in srgb, var(--primary) 78%, white 22%);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 58%, transparent);
+	}
+
+	.site-cursor__spark {
+		width: 9px;
+		height: 9px;
+		margin-left: 13px;
+		margin-top: -12px;
+		border-radius: 55% 45% 62% 38%;
+		background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), color-mix(in srgb, var(--primary) 52%, white 48%));
+		box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 38%, transparent);
+		rotate: 28deg;
+		animation: cursor-spark 1.8s ease-in-out infinite;
+	}
+
+	.site-cursor.is-interactive .site-cursor__ring {
+		width: 48px;
+		height: 48px;
+		border-color: color-mix(in srgb, var(--primary) 58%, white 42%);
+		background:
+			radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.85), transparent 25%),
+			color-mix(in srgb, var(--primary) 24%, transparent);
+	}
+
+	.site-cursor.is-interactive .site-cursor__dot {
+		transform: translate(-50%, -50%) scale(0.72);
+	}
+
+	.site-cursor.is-pressed .site-cursor__ring {
+		transform: translate(-50%, -50%) scale(0.78);
+	}
+
+	.site-cursor-ripple {
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 2147483646;
+		width: 12px;
+		height: 12px;
+		border: 1px solid color-mix(in srgb, var(--primary) 78%, white 22%);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--primary) 18%, transparent);
+		box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 32%, transparent);
+		pointer-events: none;
+		transform: translate(-50%, -50%);
+		animation: cursor-ripple 620ms ease-out forwards;
+	}
+}
+
+@keyframes cursor-spark {
+	0%,
+	100% {
+		opacity: 0.72;
+		transform: translate(-50%, -50%) scale(0.86);
+	}
+
+	50% {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1.1);
+	}
+}
+
+@keyframes cursor-ripple {
+	0% {
+		opacity: 0.9;
+		transform: translate(-50%, -50%) scale(0.8);
+	}
+
+	100% {
+		opacity: 0;
+		transform: translate(-50%, -50%) scale(5.2);
+	}
+}
+
+.firefly-card {
+	border: 1px solid var(--line-divider);
 	border-radius: var(--radius-large);
 	background: var(--card-bg);
 	box-shadow: var(--shadow-card);
-	backdrop-filter: blur(18px) saturate(1.2);
+	backdrop-filter: blur(16px) saturate(1.12);
 }
 
-.fuwari-button {
+.firefly-button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -206,13 +369,13 @@ hr {
 		transform 0.2s ease;
 }
 
-.fuwari-button:hover {
+.firefly-button:hover {
 	background: var(--btn-regular-bg-hover);
 	color: var(--primary);
 	transform: translateY(-1px);
 }
 
-.fuwari-link {
+.firefly-link {
 	border-radius: 0.55rem;
 	text-decoration: underline;
 	text-decoration-color: var(--link-underline);
@@ -221,9 +384,31 @@ hr {
 	text-underline-offset: 0.25rem;
 }
 
-.fuwari-link:hover {
+.firefly-link:hover {
 	background: var(--btn-plain-bg-hover);
 	text-decoration-color: transparent;
+}
+
+* {
+	scrollbar-color: color-mix(in srgb, var(--primary) 42%, transparent) transparent;
+	scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+	width: 9px;
+	height: 9px;
+}
+
+::-webkit-scrollbar-thumb {
+	border: 2px solid transparent;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--primary) 38%, transparent);
+	background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--primary) 58%, transparent);
+	background-clip: padding-box;
 }
 
 .markdown-body {

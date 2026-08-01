@@ -1,32 +1,58 @@
 ---
-import { BookOpen, Home, User } from '@lucide/astro';
+import { BookOpen, FolderGit2, Home, Leaf, MonitorCog, Moon, Sun, User } from '@lucide/astro';
 import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
+
+type Props = {
+	overlay?: boolean;
+};
+
+const { overlay = false } = Astro.props;
 ---
 
-<header>
-	<nav class="fuwari-card">
-		<a class="brand fuwari-button" href={import.meta.env.BASE_URL}>
-			<Home size={21} />
+<header class:list={{ overlay }}>
+	<nav class="firefly-card">
+		<a class="brand firefly-button" href={import.meta.env.BASE_URL}>
+			<Leaf size={22} />
 			<span>{SITE_TITLE}</span>
 		</a>
 		<div class="internal-links" aria-label="Primary navigation">
 			<HeaderLink href="/"><Home size={17} />首页</HeaderLink>
 			<HeaderLink href="/blog"><BookOpen size={17} />笔记</HeaderLink>
-			<HeaderLink href="/projects">项目</HeaderLink>
-			<HeaderLink href="/setup">设备</HeaderLink>
+			<HeaderLink href="/projects"><FolderGit2 size={17} />项目</HeaderLink>
+			<HeaderLink href="/setup"><MonitorCog size={17} />设备</HeaderLink>
 			<HeaderLink href="/about"><User size={17} />关于</HeaderLink>
 		</div>
+		<button class="theme-toggle" type="button" aria-label="切换明暗主题" data-theme-toggle>
+			<Sun class="sun-icon" size={19} />
+			<Moon class="moon-icon" size={19} />
+		</button>
 	</nav>
 </header>
+
+<script>
+	const themeToggle = document.querySelector('[data-theme-toggle]');
+	themeToggle?.addEventListener('click', () => {
+		const root = document.documentElement;
+		const dark = root.classList.toggle('dark');
+		localStorage.setItem('ziyyun-theme', dark ? 'dark' : 'light');
+		themeToggle.setAttribute('aria-pressed', String(dark));
+	});
+</script>
 
 <style>
 	header {
 		position: sticky;
-		top: 0;
+		top: 0.75rem;
 		z-index: 20;
-		padding: 0 1rem;
+		padding: 0 1rem 0.75rem;
 		pointer-events: none;
+	}
+
+	header.overlay {
+		position: fixed;
+		left: 0;
+		right: 0;
 	}
 
 	nav {
@@ -34,20 +60,24 @@ import HeaderLink from './HeaderLink.astro';
 		align-items: center;
 		justify-content: space-between;
 		width: min(var(--page-width), 100%);
-		height: 4.5rem;
+		height: 4.25rem;
 		margin: 0 auto;
-		border-top-left-radius: 0;
-		border-top-right-radius: 0;
-		padding: 0 0.85rem;
+		padding: 0 0.75rem;
 		pointer-events: auto;
 	}
 
 	.brand {
 		gap: 0.5rem;
-		height: 3.25rem;
-		padding: 0 1rem;
+		height: 2.85rem;
+		padding: 0 0.8rem;
+		background: transparent;
+		color: rgb(var(--black));
 		font-size: 0.95rem;
 		font-weight: 700;
+	}
+
+	.brand :global(svg) {
+		color: var(--primary);
 	}
 
 	.internal-links {
@@ -62,17 +92,59 @@ import HeaderLink from './HeaderLink.astro';
 		display: none;
 	}
 
+	.theme-toggle {
+		position: relative;
+		flex: 0 0 auto;
+		width: 2.75rem;
+		height: 2.75rem;
+		border: 0;
+		border-radius: 0.75rem;
+		background: var(--btn-plain-bg-hover);
+		color: rgb(var(--gray-dark));
+		cursor: pointer;
+	}
+
+	.theme-toggle :global(svg) {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		transition: opacity 180ms ease, rotate 180ms ease;
+	}
+
+	.moon-icon,
+	:global(:root.dark) .sun-icon {
+		opacity: 0;
+		rotate: -45deg;
+	}
+
+	:global(:root.dark) .moon-icon {
+		opacity: 1;
+		rotate: 0deg;
+	}
+
 	@media (max-width: 640px) {
 		header {
-			padding: 0;
+			top: 0.5rem;
+			padding: 0 0.5rem 0.5rem;
 		}
 
 		nav {
-			border-radius: 0;
+			height: 3.75rem;
 		}
 
 		.brand span {
 			display: none;
+		}
+
+		.brand {
+			width: 2.6rem;
+			padding: 0;
+		}
+
+		.theme-toggle {
+			width: 2.5rem;
+			height: 2.5rem;
 		}
 	}
 </style>

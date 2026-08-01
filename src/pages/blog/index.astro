@@ -35,7 +35,7 @@ const rest = posts.slice(1);
 
 					{
 						featured && (
-							<article class="featured fuwari-card">
+							<article class="featured firefly-card">
 								<div class="featured-copy">
 									<span class="label">Latest</span>
 									<h2><a href={`${baseUrl}blog/${featured.id}/`}>{featured.data.title}</a></h2>
@@ -46,7 +46,7 @@ const rest = posts.slice(1);
 										<span>{featured.data.tags?.slice(0, 3).join(' / ')}</span>
 									</div>
 								</div>
-								<a class="featured-arrow fuwari-button" href={`${baseUrl}blog/${featured.id}/`} aria-label={`阅读 ${featured.data.title}`}>
+								<a class="featured-arrow firefly-button" href={`${baseUrl}blog/${featured.id}/`} aria-label={`阅读 ${featured.data.title}`}>
 									<span>→</span>
 								</a>
 							</article>
@@ -56,7 +56,7 @@ const rest = posts.slice(1);
 					<section class="post-list" aria-label="全部笔记">
 						{
 							rest.map((post) => (
-								<article class="post-card fuwari-card">
+								<article class="post-card firefly-card">
 									<a class="post-card-main" href={`${baseUrl}blog/${post.id}/`}>
 										<h2>{post.data.title}</h2>
 										<div class="post-meta">
@@ -65,7 +65,7 @@ const rest = posts.slice(1);
 										</div>
 										<p>{post.data.description}</p>
 									</a>
-									<a class="post-card-arrow fuwari-button" href={`${baseUrl}blog/${post.id}/`} aria-label={`阅读 ${post.data.title}`}>
+									<a class="post-card-arrow firefly-button" href={`${baseUrl}blog/${post.id}/`} aria-label={`阅读 ${post.data.title}`}>
 										→
 									</a>
 								</article>

@@ -32,6 +32,84 @@ const { title, description, image = FallbackImage } = Astro.props;
 />
 <meta name="generator" content={Astro.generator} />
 
+<script is:inline>
+	try {
+		const savedTheme = localStorage.getItem('ziyyun-theme');
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		document.documentElement.classList.toggle('dark', savedTheme === 'dark' || (!savedTheme && prefersDark));
+	} catch {}
+</script>
+
+<script is:inline>
+	(() => {
+		if (window.__ziyyunCursor || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.matchMedia('(pointer: fine)').matches) return;
+		window.__ziyyunCursor = true;
+
+		const root = document.documentElement;
+		const createCursor = () => {
+			if (document.querySelector('[data-site-cursor]')) return;
+
+			const cursor = document.createElement('div');
+			cursor.className = 'site-cursor';
+			cursor.setAttribute('data-site-cursor', '');
+			cursor.innerHTML = '<span class="site-cursor__ring"></span><span class="site-cursor__dot"></span><span class="site-cursor__spark"></span>';
+			document.body.append(cursor);
+			root.classList.add('site-cursor-ready');
+
+			let pointerX = window.innerWidth / 2;
+			let pointerY = window.innerHeight / 2;
+			let currentX = pointerX;
+			let currentY = pointerY;
+			let raf = 0;
+
+			const render = () => {
+				currentX += (pointerX - currentX) * 0.22;
+				currentY += (pointerY - currentY) * 0.22;
+				cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+				raf = window.requestAnimationFrame(render);
+			};
+
+			const move = (event) => {
+				pointerX = event.clientX;
+				pointerY = event.clientY;
+				cursor.classList.add('is-visible');
+			};
+
+			const setInteractive = (event) => {
+				const target = event.target;
+				const interactive = target instanceof Element && target.closest('a, button, summary, input, textarea, select, [role="button"], [data-draggable-tag]');
+				cursor.classList.toggle('is-interactive', Boolean(interactive));
+			};
+
+			const pop = (event) => {
+				const ripple = document.createElement('span');
+				ripple.className = 'site-cursor-ripple';
+				ripple.style.left = `${event.clientX}px`;
+				ripple.style.top = `${event.clientY}px`;
+				document.body.append(ripple);
+				window.setTimeout(() => ripple.remove(), 620);
+			};
+
+			window.addEventListener('pointermove', move, { passive: true });
+			window.addEventListener('pointerover', setInteractive, { passive: true });
+			window.addEventListener('pointerdown', () => cursor.classList.add('is-pressed'), { passive: true });
+			window.addEventListener('pointerup', (event) => {
+				cursor.classList.remove('is-pressed');
+				pop(event);
+			}, { passive: true });
+			window.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
+			raf = window.requestAnimationFrame(render);
+
+			window.addEventListener('beforeunload', () => {
+				window.cancelAnimationFrame(raf);
+			}, { once: true });
+		};
+
+		if (document.body) createCursor();
+		else window.addEventListener('DOMContentLoaded', createCursor, { once: true });
+	})();
+</script>
+
 <Font cssVariable="--font-atkinson" preload />
 
 <!-- Canonical URL -->

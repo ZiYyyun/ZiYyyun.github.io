@@ -1,11 +1,11 @@
 ---
 import { Code, Mail, MessageCircle, Rss } from '@lucide/astro';
-import Avatar from '../assets/fuwari-avatar.png';
+import Avatar from '../assets/firefly-avatar.png';
 
 const baseUrl = import.meta.env.BASE_URL;
 ---
 
-<aside class="profile fuwari-card">
+<aside class="profile firefly-card">
 	<a class="avatar-link" href={`${baseUrl}about/`} aria-label="About ZiYyun">
 		<img src={Avatar.src} alt="ZiYyun avatar" />
 	</a>
@@ -14,16 +14,16 @@ const baseUrl = import.meta.env.BASE_URL;
 		<div class="accent-line"></div>
 		<p>长期笔记、代码实践、嵌入式系统和一点日常思考。</p>
 		<div class="links" aria-label="Profile links">
-			<a class="fuwari-button" href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
+			<a class="firefly-button" href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
 				<Code size={19} />
 			</a>
-			<a class="fuwari-button" href="mailto:1583931339@qq.com" aria-label="Email">
+			<a class="firefly-button" href="mailto:1583931339@qq.com" aria-label="Email">
 				<Mail size={19} />
 			</a>
-			<a class="fuwari-button" href={`${baseUrl}rss.xml`} aria-label="RSS">
+			<a class="firefly-button" href={`${baseUrl}rss.xml`} aria-label="RSS">
 				<Rss size={19} />
 			</a>
-			<a class="fuwari-button" href={`${baseUrl}about/`} aria-label="About">
+			<a class="firefly-button" href={`${baseUrl}about/`} aria-label="About">
 				<MessageCircle size={19} />
 			</a>
 		</div>

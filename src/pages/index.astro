@@ -1,39 +1,87 @@
 ---
-import { GitBranch, Mail, MonitorCog, QrCode, Send, SquareTerminal } from '@lucide/astro';
+import {
+	ArrowUpRight,
+	BookOpen,
+	Box,
+	Cpu,
+	GitBranch,
+	Mail,
+	MonitorCog,
+	QrCode,
+	Send,
+	SquareTerminal,
+	Star,
+} from '@lucide/astro';
 import { getCollection } from 'astro:content';
-import BackgroundImage from '../assets/fuwari-banner.png';
+import BackgroundImage from '../assets/firefly-banner.png';
 import BaseHead from '../components/BaseHead.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 import { getTagSummaries } from '../lib/tags';
 
-const posts = await getCollection('blog');
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
 const baseUrl = import.meta.env.BASE_URL;
 const tags = getTagSummaries(posts, baseUrl);
+const recentPosts = posts.slice(0, 4);
 
 function getShortTagName(name: string) {
 	const parts = name.split(/[\\/]/).filter(Boolean);
 	return parts.at(-1) ?? name;
 }
 
-const quickEntries = [
+type Repo = {
+	name: string;
+	description: string;
+	htmlUrl: string;
+	language: string;
+	stars: number;
+};
+
+const fallbackRepos: Repo[] = [
 	{
-		title: '笔记宇宙',
-		description: '从 Obsidian 发布出来的长期笔记、嵌入式实践和开发记录。',
-		href: `${baseUrl}blog/`,
-		icon: SquareTerminal,
+		name: 'ZiYyun-ObsidianUnivrse',
+		description: 'Obsidian 长期笔记与博客内容的源仓库。',
+		htmlUrl: 'https://github.com/ZiYyyun/ZiYyun-ObsidianUnivrse',
+		language: 'Markdown',
+		stars: 0,
 	},
 	{
-		title: '项目仓库',
-		description: 'GitHub 项目、实验代码和正在慢慢打磨的工具集合。',
-		href: `${baseUrl}projects/`,
-		icon: GitBranch,
+		name: 'ZiYyun.github.io',
+		description: '当前个人博客与自动发布流水线。',
+		htmlUrl: 'https://github.com/ZiYyyun/ZiYyun.github.io',
+		language: 'Astro',
+		stars: 0,
 	},
-	{
-		title: '开发环境',
-		description: '系统、编辑器、工具链、工作流和常用软件配置。',
-		href: `${baseUrl}setup/`,
-		icon: MonitorCog,
-	},
+];
+
+async function loadRepos(): Promise<Repo[]> {
+	try {
+		const response = await fetch('https://api.github.com/users/ZiYyyun/repos?sort=updated&per_page=6');
+		if (!response.ok) return fallbackRepos;
+		const data = await response.json();
+		return data
+			.filter((repo: any) => !repo.fork)
+			.slice(0, 4)
+			.map((repo: any) => ({
+				name: repo.name,
+				description: repo.description || '持续维护中的代码与实验记录。',
+				htmlUrl: repo.html_url,
+				language: repo.language || 'Repository',
+				stars: repo.stargazers_count || 0,
+			}));
+	} catch {
+		return fallbackRepos;
+	}
+}
+
+const repos = await loadRepos();
+const toolGroups = [
+	{ label: '站点与内容', items: ['Astro', 'React', 'Obsidian', 'Markdown'] },
+	{ label: '开发与交付', items: ['Bun', 'npm', 'GitHub Actions', 'VS Code'] },
+	{ label: '嵌入式实验', items: ['STM32', 'ESP32', 'Linux', 'LVGL'] },
 ];
 ---
 
@@ -43,6 +91,7 @@ const quickEntries = [
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 	</head>
 	<body class="home-body">
+		<Header overlay />
 		<main class="home" style={`--home-bg: url(${BackgroundImage.src});`}>
 			<section class="hero-screen" aria-label="Homepage">
 				<div class="tag-field" aria-label="笔记标签">
@@ -50,10 +99,10 @@ const quickEntries = [
 						tags.map((tag, index) => {
 							const label = getShortTagName(tag.name);
 							return (
-								<a
+								<button
 									class="tag-bubble"
-									href={`${baseUrl}tags/${tag.slug}/`}
-									style={`--size:${Math.min(52 + tag.count * 8, 96)}px; --delay:${index * 0.09}s; --x:${7 + (index * 23) % 86}%; --y:${9 + (index * 37) % 82}%; --float:${12 + (index % 5) * 5}px; --hue:${185 + (index * 29) % 150};`}
+									type="button"
+									style={`--size:${Math.min(52 + tag.count * 8, 96)}px; --delay:${index * 0.07}s; --duration:${8.5 + (index % 5) * 0.9}s; --start-x:${7 + (index * 23) % 86}%; --start-y:${9 + (index * 37) % 82}%; --float:${12 + (index % 5) * 5}px; --hue:${185 + (index * 29) % 150};`}
 									aria-label={`查看 ${tag.name} 标签下的笔记`}
 									title={`#${tag.name}`}
 									data-draggable-tag
@@ -61,7 +110,7 @@ const quickEntries = [
 								>
 									<span>#{label}</span>
 									<small>{tag.count}</small>
-								</a>
+								</button>
 							);
 						})
 					}
@@ -71,7 +120,7 @@ const quickEntries = [
 					<p>{SITE_TITLE}</p>
 					<h1>Welcome</h1>
 					<div class="hero-actions">
-						<a class="enter-link fuwari-button" href={`${baseUrl}blog/`}>进入笔记</a>
+						<a class="enter-link firefly-button" href={`${baseUrl}blog/`}>进入笔记</a>
 						<a class="enter-link ghost" href={`${baseUrl}projects/`}>项目仓库</a>
 					</div>
 				</section>
@@ -107,29 +156,31 @@ const quickEntries = [
 				<a class="scroll-cue" href="#explore" aria-label="向下浏览">
 					<span></span>
 				</a>
+
+				<div class="firefly-waves" aria-hidden="true">
+					<svg viewBox="0 24 150 28" preserveAspectRatio="none">
+						<defs><path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s58 18 88 18 58-18 88-18 58 18 88 18v48h-352z"></path></defs>
+						<g>
+							<use href="#gentle-wave" x="48" y="0"></use>
+							<use href="#gentle-wave" x="48" y="3"></use>
+							<use href="#gentle-wave" x="48" y="5"></use>
+							<use href="#gentle-wave" x="48" y="7"></use>
+						</g>
+					</svg>
+				</div>
 			</section>
 
-			<section id="explore" class="explore-screen" aria-label="入口板块">
+			<section id="explore" class="explore-screen" aria-label="个人内容板块">
 				<div class="explore-copy">
-					<p>Explore</p>
-					<h2>把散落的记录整理成可以进入的房间。</h2>
-				</div>
-
-				<div class="entry-grid">
-					{
-						quickEntries.map((entry) => {
-							const Icon = entry.icon;
-							return (
-								<a class="entry-card" href={entry.href}>
-									<span class="entry-icon">
-										<Icon size={22} />
-									</span>
-									<strong>{entry.title}</strong>
-									<small>{entry.description}</small>
-								</a>
-							);
-						})
-					}
+					<div>
+						<p>Explore the universe</p>
+						<h2>代码、设备与长期笔记，构成我的数字工作现场。</h2>
+					</div>
+					<div class="explore-stats" aria-label="站点统计">
+						<span><strong>{posts.length}</strong> 篇文章</span>
+						<span><strong>{tags.length}</strong> 个标签</span>
+						<span><strong>{repos.length}</strong> 个近期仓库</span>
+					</div>
 				</div>
 
 				<div class="tag-dock" aria-label="标签入口">
@@ -145,6 +196,93 @@ const quickEntries = [
 						})
 					}
 				</div>
+
+				<section class="showcase-section repo-showcase" aria-labelledby="repo-title">
+					<header class="section-heading">
+						<span class="section-icon"><GitBranch size={20} /></span>
+						<div>
+							<p>Code repositories</p>
+							<h2 id="repo-title">代码现场</h2>
+							<span>近期维护的仓库、实验项目与站点基础设施。</span>
+						</div>
+						<a href={`${baseUrl}projects/`}>查看全部 <ArrowUpRight size={16} /></a>
+					</header>
+					<div class="repo-grid">
+						{repos.map((repo) => (
+							<a class="repo-tile" href={repo.htmlUrl} target="_blank" rel="noreferrer">
+								<div class="repo-topline">
+									<Box size={18} />
+									<span>{repo.language}</span>
+								</div>
+								<strong>{repo.name}</strong>
+								<p>{repo.description}</p>
+								<small><Star size={14} /> {repo.stars}</small>
+							</a>
+						))}
+					</div>
+				</section>
+
+				<section class="showcase-section setup-showcase" aria-labelledby="setup-title">
+					<header class="section-heading">
+						<span class="section-icon warm"><Cpu size={20} /></span>
+						<div>
+							<p>Workbench & machines</p>
+							<h2 id="setup-title">数字工作台</h2>
+							<span>写作、构建、嵌入式开发和部署所依赖的环境。</span>
+						</div>
+						<a href={`${baseUrl}setup/`}>进入展柜 <ArrowUpRight size={16} /></a>
+					</header>
+					<div class="workbench-grid">
+						<div class="terminal-panel">
+							<div class="terminal-bar"><i></i><i></i><i></i><span>ziyyun@workbench</span></div>
+							<div class="terminal-copy">
+								<SquareTerminal size={22} />
+								<code>bun run build</code>
+								<p>Obsidian → GitHub → Astro → GitHub Pages</p>
+							</div>
+						</div>
+						<div class="tool-groups">
+							{toolGroups.map((group) => (
+								<div class="tool-group">
+									<strong>{group.label}</strong>
+									<div>{group.items.map((item) => <span>{item}</span>)}</div>
+								</div>
+							))}
+						</div>
+						<a class="machine-tile" href={`${baseUrl}setup/`}>
+							<MonitorCog size={24} />
+							<div><strong>机器与设备展柜</strong><span>开发机、显示设备、网络与实验平台</span></div>
+							<ArrowUpRight size={18} />
+						</a>
+					</div>
+				</section>
+
+				<section class="showcase-section notes-showcase" aria-labelledby="notes-title">
+					<header class="section-heading">
+						<span class="section-icon green"><BookOpen size={20} /></span>
+						<div>
+							<p>Articles & notes</p>
+							<h2 id="notes-title">长期笔记库</h2>
+							<span>从 Obsidian 公开出来的技术实践、系统配置与项目记录。</span>
+						</div>
+						<a href={`${baseUrl}blog/`}>全部文章 <ArrowUpRight size={16} /></a>
+					</header>
+					<div class="note-grid">
+						{recentPosts.map((post, index) => (
+							<a class:list={['note-tile', { featured: index === 0 }]} href={`${baseUrl}blog/${post.id}/`}>
+								<div class="note-meta"><FormattedDate date={post.data.pubDate} /><span>{post.data.tags?.[0] ?? 'Note'}</span></div>
+								<strong>{post.data.title}</strong>
+								<p>{post.data.description}</p>
+								<ArrowUpRight size={17} />
+							</a>
+						))}
+					</div>
+				</section>
+
+				<footer class="home-footer">
+					<span>ZiYyun's Personal Universe</span>
+					<span>Built with Astro · Notes from Obsidian</span>
+				</footer>
 			</section>
 		</main>
 
@@ -157,6 +295,7 @@ const quickEntries = [
 			const bubbleState = new Map();
 			let frame = 0;
 			let resizeFrame = 0;
+			let lastProgress = 0;
 
 			function measure() {
 				bubbleState.clear();
@@ -167,8 +306,8 @@ const quickEntries = [
 					const bubbleRect = bubble.getBoundingClientRect();
 					const chipRect = target.getBoundingClientRect();
 					const style = window.getComputedStyle(bubble);
-					const startX = (Number.parseFloat(style.getPropertyValue('--x')) / 100) * window.innerWidth;
-					const startY = (Number.parseFloat(style.getPropertyValue('--y')) / 100) * window.innerHeight;
+					const startX = (Number.parseFloat(style.getPropertyValue('--start-x')) / 100) * window.innerWidth;
+					const startY = (Number.parseFloat(style.getPropertyValue('--start-y')) / 100) * window.innerHeight;
 					bubbleState.set(bubble, {
 						drag: null,
 						start: {
@@ -184,18 +323,21 @@ const quickEntries = [
 							height: chipRect.height,
 						},
 					});
+					bubble.style.left = '0px';
+					bubble.style.top = '0px';
+					bubble.style.width = `${bubbleRect.width}px`;
+					bubble.style.height = `${bubbleRect.height}px`;
 				});
 			}
 
 			function render() {
 				frame = 0;
-				const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.8, 1), 0, 1);
+				const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.92, 1), 0, 1);
+				lastProgress = progress;
 				if (home) {
 					home.style.setProperty('--scroll-progress', progress.toFixed(4));
-					home.classList.toggle('has-scrolled', progress > 0.52);
+					home.classList.toggle('has-scrolled', progress > 0.84);
 				}
-
-				const wobble = window.performance.now() / 1000;
 
 				for (const bubble of bubbles) {
 					const state = bubbleState.get(bubble);
@@ -208,23 +350,16 @@ const quickEntries = [
 					const top = lerp(state.start.top, targetTop, progress);
 					const width = lerp(state.start.width, state.end.width, progress);
 					const height = lerp(state.start.height, state.end.height, progress);
-					const radius = lerp(width / 2, 999, progress);
-					const scale = lerp(1, 1, progress);
-					const opacity = lerp(1, 1, progress);
-					const tilt = Math.sin(wobble * 1.7 + Number(bubble.dataset.tagIndex ?? 0)) * (1 - progress) * 3;
-					const driftX = Math.sin(wobble * 1.3 + Number(bubble.dataset.tagIndex ?? 0) * 0.4) * (1 - progress) * 8;
-					const driftY = Math.cos(wobble * 1.1 + Number(bubble.dataset.tagIndex ?? 0) * 0.6) * (1 - progress) * 8;
+					const scaleX = width / state.start.width;
+					const scaleY = height / state.start.height;
+					const opacity = lerp(1, 0, Math.max(0, progress - 0.97) / 0.03);
 
-					bubble.style.left = `${left}px`;
-					bubble.style.top = `${top}px`;
-					bubble.style.width = `${width}px`;
-					bubble.style.height = `${height}px`;
-					bubble.style.setProperty('--radius', `${radius}px`);
-					bubble.style.setProperty('--tx', `${driftX}px`);
-					bubble.style.setProperty('--ty', `${driftY}px`);
-					bubble.style.setProperty('--rotate', `${tilt}deg`);
-					bubble.style.setProperty('--scale', `${scale}`);
+					bubble.style.setProperty('--x', `${left}px`);
+					bubble.style.setProperty('--y', `${top}px`);
+					bubble.style.setProperty('--scale-x', `${scaleX}`);
+					bubble.style.setProperty('--scale-y', `${scaleY}`);
 					bubble.style.setProperty('--opacity', `${opacity}`);
+					bubble.style.animationPlayState = progress >= 1 ? 'paused' : 'running';
 				}
 			}
 
@@ -235,9 +370,28 @@ const quickEntries = [
 
 			bubbles.forEach((bubble) => {
 				let drag = null;
+				const finishDrag = (event) => {
+					if (!drag) return;
+					if (drag.moved) {
+						event?.preventDefault?.();
+						const state = bubbleState.get(bubble);
+						if (state && Number.isFinite(drag.left) && Number.isFinite(drag.top)) {
+							state.start.left = drag.left;
+							state.start.top = drag.top;
+						}
+						bubble.dataset.wasDragged = 'true';
+						window.setTimeout(() => delete bubble.dataset.wasDragged, 0);
+					}
+					delete bubble.dataset.dragging;
+					drag = null;
+					bubble.classList.remove('is-dragging');
+					bubble.style.animationPlayState = lastProgress >= 1 ? 'paused' : 'running';
+					scheduleRender();
+				};
 
 				bubble.addEventListener('pointerdown', (event) => {
-					if (event.button !== 0) return;
+					if (event.button !== 0 || lastProgress > 0.84) return;
+					event.preventDefault();
 					const rect = bubble.getBoundingClientRect();
 					drag = {
 						startX: event.clientX,
@@ -249,13 +403,14 @@ const quickEntries = [
 					const state = bubbleState.get(bubble);
 					if (state) state.drag = drag;
 					bubble.classList.add('is-dragging');
+					bubble.style.animationPlayState = 'paused';
 					bubble.setPointerCapture(event.pointerId);
 				});
 
 				bubble.addEventListener('pointermove', (event) => {
 					if (!drag) return;
 					const state = bubbleState.get(bubble);
-					const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.8, 1), 0, 1);
+					const progress = clamp(window.scrollY / Math.max(window.innerHeight * 0.92, 1), 0, 1);
 					const width = state.start.width + (state.end.width - state.start.width) * progress;
 					const height = state.start.height + (state.end.height - state.start.height) * progress;
 					const left = clamp(event.clientX - drag.offsetX, 0, window.innerWidth - width);
@@ -264,29 +419,26 @@ const quickEntries = [
 					if (Math.abs(event.clientX - drag.startX) + Math.abs(event.clientY - drag.startY) > 6) {
 						drag.moved = true;
 					}
+					drag.left = left;
+					drag.top = top;
 
 					bubble.dataset.dragging = 'true';
-					bubble.style.left = `${left}px`;
-					bubble.style.top = `${top}px`;
-					bubble.style.width = `${width}px`;
-					bubble.style.height = `${height}px`;
+					bubble.style.setProperty('--x', `${left}px`);
+					bubble.style.setProperty('--y', `${top}px`);
 				});
 
 				bubble.addEventListener('pointerup', (event) => {
-					if (drag?.moved) {
-						event.preventDefault();
-						bubble.dataset.wasDragged = 'true';
-						window.setTimeout(() => delete bubble.dataset.wasDragged, 0);
-					}
-					delete bubble.dataset.dragging;
-					drag = null;
-					bubble.classList.remove('is-dragging');
-					scheduleRender();
+					finishDrag(event);
 				});
 
-				bubble.addEventListener('click', (event) => {
-					if (bubble.dataset.wasDragged) event.preventDefault();
+				bubble.addEventListener('pointercancel', () => {
+					finishDrag();
 				});
+
+				window.addEventListener('pointerup', (event) => {
+					if (drag) finishDrag(event);
+				}, { passive: false });
+				window.addEventListener('pointercancel', () => finishDrag());
 			});
 
 			measure();
@@ -300,6 +452,20 @@ const quickEntries = [
 					render();
 				});
 			});
+
+			const showcaseSections = document.querySelectorAll('.showcase-section');
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+				showcaseSections.forEach((section) => section.classList.add('is-visible'));
+			} else {
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach((entry) => {
+						if (!entry.isIntersecting) return;
+						entry.target.classList.add('is-visible');
+						observer.unobserve(entry.target);
+					});
+				}, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+				showcaseSections.forEach((section) => observer.observe(section));
+			}
 		</script>
 	</body>
 </html>
@@ -308,7 +474,7 @@ const quickEntries = [
 	.home-body {
 		min-height: 100%;
 		overflow-x: hidden;
-		background: #15151e;
+		background: var(--page-bg);
 	}
 
 	.home {
@@ -321,7 +487,7 @@ const quickEntries = [
 		padding: 0;
 		overflow: clip;
 		background:
-			linear-gradient(115deg, rgba(15, 15, 24, 0.93), rgba(27, 25, 46, 0.58) 52%, rgba(80, 74, 128, 0.18)),
+			linear-gradient(115deg, rgba(22, 56, 48, 0.24), rgba(80, 166, 145, 0.12) 52%, rgba(255, 255, 255, 0.26)),
 			var(--home-bg) center / cover fixed no-repeat;
 		isolation: isolate;
 	}
@@ -331,12 +497,10 @@ const quickEntries = [
 		inset: 0;
 		z-index: -1;
 		background:
-			radial-gradient(circle at 28% 38%, oklch(0.75 0.16 285 / 0.16), transparent 28rem),
-			radial-gradient(circle at 75% 65%, oklch(0.78 0.13 185 / 0.12), transparent 24rem),
-			linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-			linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-		background-size: auto, auto, 72px 72px, 72px 72px;
-		mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.9), transparent 82%);
+			linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+		background-size: 72px 72px;
+		mask-image: linear-gradient(120deg, rgba(0, 0, 0, 0.62), transparent 82%);
 		content: '';
 		pointer-events: none;
 	}
@@ -351,11 +515,57 @@ const quickEntries = [
 		overflow: hidden;
 	}
 
+	.firefly-waves {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -1px;
+		z-index: 4;
+		height: clamp(7rem, 16vh, 12rem);
+		color: oklch(0.965 0.018 165);
+		pointer-events: none;
+	}
+
+	.firefly-waves svg {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.firefly-waves use {
+		animation: wave-slide 18s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+		fill: currentColor;
+	}
+
+	.firefly-waves use:nth-child(1) {
+		opacity: 0.28;
+		animation-delay: -2s;
+		animation-duration: 14s;
+	}
+
+	.firefly-waves use:nth-child(2) {
+		opacity: 0.42;
+		animation-delay: -3s;
+		animation-duration: 18s;
+	}
+
+	.firefly-waves use:nth-child(3) {
+		opacity: 0.62;
+		animation-delay: -4s;
+		animation-duration: 22s;
+	}
+
+	.firefly-waves use:nth-child(4) {
+		opacity: 0.95;
+		animation-delay: -5s;
+		animation-duration: 28s;
+	}
+
 	.hero-screen::after {
 		position: absolute;
 		inset: auto 0 0;
-		height: 42vh;
-		background: linear-gradient(0deg, rgba(10, 10, 18, 0.86), transparent);
+		height: 28vh;
+		background: linear-gradient(0deg, rgba(237, 249, 244, 0.82), transparent);
 		content: '';
 		pointer-events: none;
 	}
@@ -398,7 +608,6 @@ const quickEntries = [
 		text-shadow:
 			0 28px 80px rgba(0, 0, 0, 0.42),
 			0 0 42px oklch(0.78 0.13 230 / 0.24);
-		animation: welcome-glow 6.5s ease-in-out infinite;
 	}
 
 	.hero-actions {
@@ -442,28 +651,26 @@ const quickEntries = [
 		inset: 0;
 		z-index: 2;
 		pointer-events: auto;
-		will-change: contents;
 	}
 
 	.tag-bubble {
 		position: fixed;
-		left: 50%;
-		top: 50%;
+		left: 0;
+		top: 0;
 		display: inline-grid;
 		grid-template-columns: minmax(0, 1fr) auto;
 		place-items: center;
-		gap: calc(var(--scroll-progress) * 0.45rem);
+		gap: 0;
 		width: var(--size);
 		height: var(--size);
-		padding:
-			calc(0.3rem + var(--scroll-progress) * 0.26rem)
-			calc(0.3rem + var(--scroll-progress) * 0.42rem);
+		padding: 0.3rem;
 		border: 1px solid rgba(255, 255, 255, 0.22);
-		border-radius: var(--radius, 999px);
+		border-radius: 999px;
 		background:
 			linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.045)),
 			oklch(0.62 0.12 var(--hue) / 0.22);
 		color: rgba(255, 255, 255, 0.9);
+		font: inherit;
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.24),
 			0 18px 60px rgba(0, 0, 0, 0.24),
@@ -471,17 +678,20 @@ const quickEntries = [
 		text-align: center;
 		text-decoration: none;
 		touch-action: none;
-		backdrop-filter: blur(18px) saturate(1.35);
 		opacity: var(--opacity, 1);
 		transform:
-			translate3d(var(--tx, 0), var(--ty, 0), 0)
-			rotate(var(--rotate, 0deg))
-			scale(var(--scale, 1));
-		animation: bubble-enter 820ms cubic-bezier(0.2, 0.9, 0.18, 1.08) both;
-		animation-delay: var(--delay);
+			translate3d(var(--x, 0px), var(--y, 0px), 0)
+			scale(var(--scale-x, 1), var(--scale-y, 1));
+		transform-origin: top left;
+		animation:
+			bubble-enter 2.2s cubic-bezier(0.18, 0.75, 0.2, 1) both,
+			bubble-drift var(--duration) ease-in-out infinite;
+		animation-delay: var(--delay), calc(var(--delay) + 1.1s);
 		cursor: grab;
+		user-select: none;
+		-webkit-user-drag: none;
 		contain: layout style paint;
-		will-change: left, top, width, height, border-radius, transform;
+		will-change: transform, opacity;
 	}
 
 	.tag-bubble::before {
@@ -504,12 +714,14 @@ const quickEntries = [
 		filter: blur(1px);
 		content: '';
 		pointer-events: none;
+		animation: bubble-glint 4.8s ease-in-out infinite;
+		animation-delay: calc(var(--delay) + 1.4s);
 	}
 
 	.tag-bubble span {
 		max-width: 100%;
 		min-width: 0;
-		font-size: calc(0.56rem + var(--scroll-progress) * 0.26rem);
+		font-size: 0.64rem;
 		font-weight: 800;
 		line-height: 1.16;
 		overflow-wrap: anywhere;
@@ -517,17 +729,7 @@ const quickEntries = [
 	}
 
 	.tag-bubble small {
-		display: grid;
-		place-items: center;
-		min-width: calc(0px + var(--scroll-progress) * 1.35rem);
-		height: calc(0px + var(--scroll-progress) * 1.35rem);
-		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.22);
-		color: inherit;
-		font-size: 0.72rem;
-		font-weight: 900;
-		opacity: var(--scroll-progress);
-		overflow: hidden;
+		display: none;
 	}
 
 	.tag-bubble:hover,
@@ -543,6 +745,16 @@ const quickEntries = [
 			0 0 44px oklch(0.78 0.16 var(--hue) / 0.28);
 	}
 
+	.tag-dock {
+		position: relative;
+		z-index: 8;
+	}
+
+	.home.has-scrolled .tag-chip {
+		opacity: clamp(0, calc((var(--scroll-progress) - 0.84) * 6.25), 1);
+		pointer-events: auto;
+	}
+
 	.tag-bubble.is-dragging {
 		cursor: grabbing;
 		animation-play-state: paused;
@@ -554,17 +766,16 @@ const quickEntries = [
 		bottom: clamp(1rem, 4vw, 3rem);
 		z-index: 3;
 		width: min(410px, calc(100% - 2rem));
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.76);
 		border-radius: 1.25rem;
 		background:
-			linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.065)),
-			rgba(18, 18, 27, 0.38);
+			linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(236, 250, 244, 0.76)),
+			rgba(255, 255, 255, 0.72);
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.18),
 			0 24px 80px rgba(0, 0, 0, 0.32);
 		padding: 1rem;
-		color: white;
-		backdrop-filter: blur(20px) saturate(1.24);
+		color: oklch(0.28 0.024 165);
 		transform: translateY(calc(var(--scroll-progress) * 85px));
 		opacity: calc(1 - var(--scroll-progress) * 0.8);
 		transition: border-color 160ms ease, background 160ms ease;
@@ -583,9 +794,9 @@ const quickEntries = [
 		width: fit-content;
 		margin-bottom: 0.65rem;
 		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.13);
+		background: oklch(0.9 0.08 165);
 		padding: 0.2rem 0.58rem;
-		color: rgba(255, 255, 255, 0.7);
+		color: oklch(0.48 0.12 165);
 		font-size: 0.68rem;
 		font-weight: 800;
 		text-transform: uppercase;
@@ -597,6 +808,7 @@ const quickEntries = [
 	}
 
 	.name {
+		color: oklch(0.22 0.03 165);
 		font-size: 1.35rem;
 		font-weight: 800;
 	}
@@ -604,7 +816,7 @@ const quickEntries = [
 	.motto {
 		max-width: 340px;
 		margin-top: 0.42rem;
-		color: rgba(255, 255, 255, 0.76);
+		color: oklch(0.43 0.025 165);
 		font-size: 0.92rem;
 		line-height: 1.78;
 	}
@@ -617,11 +829,11 @@ const quickEntries = [
 	}
 
 	.bio-meta span {
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(50, 150, 120, 0.12);
 		border-radius: 999px;
-		background: rgba(255, 255, 255, 0.1);
+		background: oklch(0.93 0.055 165);
 		padding: 0.18rem 0.5rem;
-		color: rgba(255, 255, 255, 0.74);
+		color: oklch(0.48 0.1 165);
 		font-size: 0.72rem;
 	}
 
@@ -637,10 +849,10 @@ const quickEntries = [
 		place-items: center;
 		width: 40px;
 		height: 40px;
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		border: 1px solid rgba(50, 150, 120, 0.14);
 		border-radius: 0.86rem;
-		background: rgba(255, 255, 255, 0.1);
-		color: white;
+		background: oklch(0.92 0.06 165);
+		color: oklch(0.48 0.12 165);
 		text-decoration: none;
 		backdrop-filter: blur(14px);
 		transition: transform 160ms ease, background 160ms ease, color 160ms ease;
@@ -652,8 +864,8 @@ const quickEntries = [
 	}
 
 	.links a:hover {
-		background: rgba(255, 255, 255, 0.9);
-		color: rgb(var(--black));
+		background: var(--primary);
+		color: white;
 		transform: translateY(-2px);
 	}
 
@@ -684,15 +896,19 @@ const quickEntries = [
 	.explore-screen {
 		z-index: 6;
 		display: grid;
-		align-content: center;
-		gap: clamp(1.5rem, 4vw, 3rem);
-		padding: clamp(5rem, 10vw, 8rem) clamp(1rem, 5vw, 5rem);
+		align-content: start;
+		gap: clamp(3.5rem, 7vw, 6rem);
+		padding: clamp(5rem, 9vw, 8rem) clamp(1rem, 5vw, 5rem) 2rem;
 		background:
-			linear-gradient(180deg, rgba(14, 14, 22, 0.68), rgba(18, 18, 28, 0.95) 34%, rgba(247, 246, 252, 0.94));
+			linear-gradient(180deg, rgba(14, 14, 22, 0.72), rgba(18, 18, 28, 0.97) 19rem, rgba(244, 245, 249, 0.98) 44rem);
 	}
 
 	.explore-copy {
-		width: min(960px, 100%);
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 2rem;
+		width: min(1180px, 100%);
 		margin: 0 auto;
 		color: white;
 	}
@@ -706,67 +922,37 @@ const quickEntries = [
 	}
 
 	.explore-copy h2 {
-		max-width: 680px;
+		max-width: 760px;
 		margin: 0;
 		color: rgba(255, 255, 255, 0.92);
 		font-size: clamp(2rem, 4vw, 4.2rem);
 		line-height: 1.06;
 	}
 
-	.entry-grid,
+	.explore-stats {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.55rem;
+		max-width: 330px;
+	}
+
+	.explore-stats span {
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.08);
+		padding: 0.38rem 0.7rem;
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 0.74rem;
+	}
+
+	.explore-stats strong {
+		color: white;
+	}
+
 	.tag-dock {
-		width: min(960px, 100%);
+		width: min(1180px, 100%);
 		margin: 0 auto;
-	}
-
-	.entry-grid {
-		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 0.9rem;
-	}
-
-	.entry-card {
-		display: grid;
-		align-content: start;
-		gap: 0.8rem;
-		min-height: 190px;
-		border: 1px solid rgba(24, 24, 34, 0.1);
-		border-radius: 1.15rem;
-		background: rgba(255, 255, 255, 0.78);
-		box-shadow: 0 22px 80px rgba(17, 17, 25, 0.12);
-		padding: 1.15rem;
-		color: rgb(var(--black));
-		text-decoration: none;
-		backdrop-filter: blur(18px);
-		transform: translateY(calc((1 - var(--scroll-progress)) * 32px));
-		opacity: clamp(0, calc((var(--scroll-progress) - 0.44) * 2.4), 1);
-		transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
-	}
-
-	.entry-card:hover {
-		background: white;
-		box-shadow: 0 28px 90px rgba(17, 17, 25, 0.18);
-		transform: translateY(-4px);
-	}
-
-	.entry-icon {
-		display: grid;
-		place-items: center;
-		width: 46px;
-		height: 46px;
-		border-radius: 0.9rem;
-		background: oklch(0.9 0.06 245);
-		color: oklch(0.46 0.14 250);
-	}
-
-	.entry-card strong {
-		font-size: 1.12rem;
-	}
-
-	.entry-card small {
-		color: rgb(var(--gray));
-		font-size: 0.86rem;
-		line-height: 1.72;
 	}
 
 	.tag-dock {
@@ -786,10 +972,9 @@ const quickEntries = [
 		padding: 0.56rem 0.72rem;
 		color: rgb(var(--black));
 		text-decoration: none;
-		backdrop-filter: blur(16px);
 		opacity: 0;
 		pointer-events: none;
-		transition: transform 160ms ease, background 160ms ease;
+		transition: transform 180ms ease, background 180ms ease, opacity 120ms linear;
 	}
 
 	.tag-chip:hover {
@@ -814,44 +999,382 @@ const quickEntries = [
 		font-weight: 900;
 	}
 
+	.showcase-section,
+	.home-footer {
+		width: min(1180px, 100%);
+		margin: 0 auto;
+	}
+
+	.showcase-section {
+		opacity: 0;
+		transform: translateY(28px);
+		transition: opacity 650ms ease, transform 650ms cubic-bezier(0.2, 0.75, 0.2, 1);
+	}
+
+	.showcase-section.is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.section-heading {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.9rem;
+		margin-bottom: 1.35rem;
+	}
+
+	.section-icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		border-radius: 8px;
+		background: oklch(0.9 0.06 250);
+		color: oklch(0.5 0.15 250);
+	}
+
+	.section-icon.warm {
+		background: oklch(0.92 0.07 70);
+		color: oklch(0.55 0.15 45);
+	}
+
+	.section-icon.green {
+		background: oklch(0.91 0.07 160);
+		color: oklch(0.48 0.12 160);
+	}
+
+	.section-heading p,
+	.section-heading h2,
+	.section-heading span {
+		margin: 0;
+	}
+
+	.section-heading p {
+		color: var(--primary);
+		font-size: 0.7rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+
+	.section-heading h2 {
+		margin-top: 0.1rem;
+		font-size: clamp(1.65rem, 3vw, 2.35rem);
+	}
+
+	.section-heading div > span {
+		display: block;
+		margin-top: 0.18rem;
+		color: rgb(var(--gray));
+		font-size: 0.86rem;
+	}
+
+	.section-heading > a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		border-bottom: 1px solid rgba(var(--gray), 0.3);
+		padding: 0.35rem 0;
+		color: rgb(var(--gray-dark));
+		font-size: 0.82rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.section-heading > a:hover {
+		border-color: var(--primary);
+		color: var(--primary);
+	}
+
+	.repo-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.8rem;
+	}
+
+	.repo-tile {
+		position: relative;
+		display: grid;
+		gap: 0.65rem;
+		min-height: 180px;
+		border: 1px solid rgba(25, 27, 38, 0.09);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.86);
+		box-shadow: 0 16px 48px rgba(28, 30, 44, 0.08);
+		padding: 1.15rem;
+		color: rgb(var(--gray-dark));
+		text-decoration: none;
+		transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+	}
+
+	.repo-tile:hover {
+		border-color: oklch(0.72 0.12 250 / 0.5);
+		box-shadow: 0 22px 60px rgba(28, 30, 44, 0.13);
+		transform: translateY(-3px);
+	}
+
+	.repo-topline,
+	.repo-tile small {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.repo-topline {
+		justify-content: space-between;
+		color: var(--primary);
+	}
+
+	.repo-topline span {
+		border-radius: 999px;
+		background: var(--btn-regular-bg);
+		padding: 0.18rem 0.5rem;
+		font-size: 0.7rem;
+	}
+
+	.repo-tile > strong {
+		font-size: 1.05rem;
+		overflow-wrap: anywhere;
+	}
+
+	.repo-tile p {
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.84rem;
+		line-height: 1.65;
+	}
+
+	.repo-tile small {
+		align-self: end;
+		color: rgb(var(--gray));
+		font-size: 0.72rem;
+	}
+
+	.workbench-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+		gap: 0.8rem;
+	}
+
+	.terminal-panel {
+		min-height: 260px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		background: #1c1d24;
+		box-shadow: 0 20px 60px rgba(24, 25, 34, 0.16);
+		color: rgba(255, 255, 255, 0.86);
+		overflow: hidden;
+	}
+
+	.terminal-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.38rem;
+		height: 42px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 0 0.85rem;
+	}
+
+	.terminal-bar i {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: #ef6a67;
+	}
+
+	.terminal-bar i:nth-child(2) { background: #e6b95c; }
+	.terminal-bar i:nth-child(3) { background: #63c174; }
+
+	.terminal-bar span {
+		margin-left: auto;
+		color: rgba(255, 255, 255, 0.42);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.68rem;
+	}
+
+	.terminal-copy {
+		display: grid;
+		align-content: center;
+		gap: 1rem;
+		height: calc(100% - 42px);
+		padding: 1.5rem;
+	}
+
+	.terminal-copy svg { color: oklch(0.78 0.13 170); }
+
+	.terminal-copy code {
+		width: fit-content;
+		background: rgba(255, 255, 255, 0.08);
+		color: oklch(0.84 0.1 160);
+		font-size: clamp(1rem, 2vw, 1.35rem);
+	}
+
+	.terminal-copy p {
+		margin: 0;
+		color: rgba(255, 255, 255, 0.56);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.76rem;
+	}
+
+	.tool-groups {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.tool-group {
+		border: 1px solid rgba(25, 27, 38, 0.09);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.82);
+		padding: 0.85rem;
+	}
+
+	.tool-group > strong {
+		display: block;
+		margin-bottom: 0.55rem;
+		font-size: 0.8rem;
+	}
+
+	.tool-group > div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	.tool-group span {
+		border-radius: 5px;
+		background: var(--btn-regular-bg);
+		padding: 0.18rem 0.45rem;
+		color: var(--btn-content);
+		font-size: 0.7rem;
+	}
+
+	.machine-tile {
+		display: grid;
+		grid-column: 1 / -1;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.9rem;
+		border: 1px solid rgba(25, 27, 38, 0.09);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.84);
+		padding: 1rem;
+		color: rgb(var(--gray-dark));
+		text-decoration: none;
+	}
+
+	.machine-tile > svg:first-child { color: oklch(0.55 0.15 45); }
+	.machine-tile > svg:last-child { color: rgb(var(--gray)); }
+	.machine-tile div { display: grid; gap: 0.12rem; }
+	.machine-tile span { color: rgb(var(--gray)); font-size: 0.78rem; }
+
+	.note-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.8rem;
+	}
+
+	.note-tile {
+		position: relative;
+		display: grid;
+		align-content: start;
+		gap: 0.65rem;
+		min-height: 190px;
+		border: 1px solid rgba(25, 27, 38, 0.09);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.84);
+		padding: 1.1rem;
+		color: rgb(var(--gray-dark));
+		text-decoration: none;
+		transition: border-color 180ms ease, transform 180ms ease;
+	}
+
+	.note-tile:hover {
+		border-color: oklch(0.68 0.12 160 / 0.5);
+		transform: translateY(-3px);
+	}
+
+	.note-tile.featured {
+		background: linear-gradient(135deg, oklch(0.94 0.04 160), rgba(255, 255, 255, 0.9));
+	}
+
+	.note-meta {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.6rem;
+		color: rgb(var(--gray));
+		font-size: 0.7rem;
+	}
+
+	.note-meta span {
+		max-width: 48%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.note-tile > strong {
+		font-size: 1.03rem;
+		line-height: 1.45;
+	}
+
+	.note-tile p {
+		display: -webkit-box;
+		margin: 0;
+		color: rgb(var(--gray));
+		font-size: 0.82rem;
+		line-height: 1.68;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.note-tile > svg {
+		position: absolute;
+		right: 1rem;
+		bottom: 1rem;
+		color: var(--primary);
+	}
+
+	.home-footer {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		border-top: 1px solid rgba(25, 27, 38, 0.1);
+		padding-top: 1.2rem;
+		color: rgb(var(--gray));
+		font-size: 0.72rem;
+	}
+
 	@keyframes bubble-enter {
 		0% {
-			opacity: 0;
-			filter: blur(8px);
+			filter: blur(7px);
 		}
-		70% {
-			opacity: 1;
-			filter: blur(0);
+		55% {
+			filter: blur(2.5px);
 		}
 		100% {
-			opacity: 1;
 			filter: blur(0);
 		}
+	}
+
+	@keyframes bubble-drift {
+		0%, 100% { translate: 0 0; rotate: -1.5deg; }
+		32% { translate: calc(var(--float) * 0.45) calc(var(--float) * -0.65); rotate: 2deg; }
+		68% { translate: calc(var(--float) * -0.35) calc(var(--float) * 0.42); rotate: -2.5deg; }
+	}
+
+	@keyframes bubble-glint {
+		0%, 100% { opacity: 0.28; translate: 0 0; }
+		50% { opacity: 0.62; translate: 18% 10%; }
 	}
 
 	@keyframes welcome-breathe {
 		0%,
 		100% {
-			filter: saturate(1);
+			translate: 0 -3px;
 		}
 		50% {
-			filter: saturate(1.18);
-		}
-	}
-
-	@keyframes welcome-glow {
-		0%,
-		100% {
-			letter-spacing: 0;
-			text-shadow:
-				0 28px 80px rgba(0, 0, 0, 0.42),
-				0 0 42px oklch(0.78 0.13 230 / 0.24);
-		}
-		50% {
-			letter-spacing: 0;
-			text-shadow:
-				0 34px 90px rgba(0, 0, 0, 0.44),
-				0 0 68px oklch(0.8 0.16 285 / 0.34);
+			translate: 0 5px;
 		}
 	}
 
@@ -867,6 +1390,15 @@ const quickEntries = [
 		}
 	}
 
+	@keyframes wave-slide {
+		0% {
+			transform: translate3d(-90px, 0, 0);
+		}
+		100% {
+			transform: translate3d(85px, 0, 0);
+		}
+	}
+
 	@media (max-width: 820px) {
 		.welcome {
 			top: 38%;
@@ -879,8 +1411,21 @@ const quickEntries = [
 			width: auto;
 		}
 
-		.entry-grid {
+		.explore-copy {
+			align-items: start;
+			flex-direction: column;
+		}
+
+		.explore-stats {
+			justify-content: flex-start;
+		}
+
+		.workbench-grid {
 			grid-template-columns: 1fr;
+		}
+
+		.machine-tile {
+			grid-column: auto;
 		}
 
 		.explore-copy h2 {
@@ -900,6 +1445,45 @@ const quickEntries = [
 
 		.hero-actions {
 			margin-top: 0.8rem;
+		}
+
+		.explore-screen {
+			gap: 3.5rem;
+			padding-inline: 0.85rem;
+		}
+
+		.repo-grid,
+		.note-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.section-heading {
+			grid-template-columns: auto minmax(0, 1fr);
+		}
+
+		.section-heading > a {
+			grid-column: 2;
+			width: fit-content;
+		}
+
+		.home-footer {
+			flex-direction: column;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.tag-bubble,
+		.tag-bubble::after,
+		.welcome,
+		.scroll-cue span,
+		.firefly-waves use {
+			animation: none;
+		}
+
+		.showcase-section {
+			opacity: 1;
+			transform: none;
+			transition: none;
 		}
 	}
 </style>

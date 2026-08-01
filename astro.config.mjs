@@ -53,4 +53,11 @@ export default defineConfig({
             },
         },
     ],
+    vite: {
+        server: {
+            watch: {
+                ignored: ['**/.cache/**'],
+            },
+        },
+    },
 });
