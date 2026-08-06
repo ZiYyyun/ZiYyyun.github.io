@@ -1,5 +1,5 @@
 ---
-import { BookOpen, FolderGit2, Home, Leaf, MonitorCog, Moon, Sun, User } from '@lucide/astro';
+import { BookOpen, FolderGit2, Home, Leaf, Moon, Sun, User } from '@lucide/astro';
 import { SITE_TITLE } from '../consts';
 import HeaderLink from './HeaderLink.astro';
 
@@ -20,7 +20,6 @@ const { overlay = false } = Astro.props;
 			<HeaderLink href="/"><Home size={17} />首页</HeaderLink>
 			<HeaderLink href="/blog"><BookOpen size={17} />笔记</HeaderLink>
 			<HeaderLink href="/projects"><FolderGit2 size={17} />项目</HeaderLink>
-			<HeaderLink href="/setup"><MonitorCog size={17} />设备</HeaderLink>
 			<HeaderLink href="/about"><User size={17} />关于</HeaderLink>
 		</div>
 		<button class="theme-toggle" type="button" aria-label="切换明暗主题" data-theme-toggle>

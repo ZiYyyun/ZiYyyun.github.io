@@ -1,20 +1,298 @@
 ---
-import AboutHeroImage from '../assets/blog-placeholder-about.jpg';
-import Layout from '../layouts/BlogPost.astro';
+import { ArrowUpRight, BookOpen, GitBranch, MonitorCog } from '@lucide/astro';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import ProfileCard from '../components/ProfileCard.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+
+const baseUrl = import.meta.env.BASE_URL;
+
+const entries = [
+	{
+		title: '笔记与文章',
+		description: '从 Obsidian 发布出来的长期笔记，覆盖嵌入式、Linux、工具链和项目记录。',
+		href: `${baseUrl}blog/`,
+		icon: BookOpen,
+	},
+	{
+		title: '项目仓库',
+		description: '正在维护的代码、实验项目和这个博客本身。',
+		href: `${baseUrl}projects/`,
+		icon: GitBranch,
+	},
+	{
+		title: '开发环境与设备',
+		description: 'ThinkPad P14s Gen 5、X230i、NixOS 配置和日常工具链。',
+		href: `${baseUrl}setup/`,
+		icon: MonitorCog,
+	},
+];
 ---
 
-<Layout
-	title="关于"
-	description="ZiYyun Blog 的起点。"
-	pubDate={new Date('July 30 2026')}
-	heroImage={AboutHeroImage}
->
-	<p>
-		Hello
-	</p>
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={`关于 - ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="about-page">
+			<div class="about-grid">
+				<ProfileCard />
+				<section class="content-column">
+					<header class="about-hero firefly-card">
+						<div>
+							<p class="eyebrow">About</p>
+							<h1>ZiYyun 的数字工作现场</h1>
+							<p>
+								这里会持续收纳我的长期笔记、代码实践、嵌入式实验、开发环境和一些慢慢写清楚的想法。
+								博客的内容来自 Obsidian，发布链路则交给 GitHub Actions 和 Astro。
+							</p>
+						</div>
+						<div class="contact-panel" aria-label="联系方式">
+							<a href="https://github.com/ZiYyyun" target="_blank" rel="noreferrer" aria-label="GitHub">
+								<span>GitHub</span>
+							</a>
+							<a href="mailto:1583931339@qq.com" aria-label="Email">
+								<span>Email</span>
+							</a>
+							<a href="https://t.me/ZiYyyun" target="_blank" rel="noreferrer" aria-label="Telegram">
+								<span>Telegram</span>
+							</a>
+							<a href={`${baseUrl}about/`} aria-label="WeChat">
+								<span>WeChat</span>
+							</a>
+						</div>
+					</header>
 
-	<p>
-		当前版本先完成 Hello World：Astro 负责静态构建和 Markdown 内容集合，React 作为按需交互组件接入，
-		GitHub Actions 负责在推送后自动发布到 GitHub Pages。
-	</p>
-</Layout>
+					<section class="entry-grid">
+						{entries.map((entry) => {
+							const Icon = entry.icon;
+							return (
+								<a class="entry-card firefly-card" href={entry.href}>
+									<Icon size={24} />
+									<strong>{entry.title}</strong>
+									<p>{entry.description}</p>
+									<span>进入 <ArrowUpRight size={15} /></span>
+								</a>
+							);
+						})}
+					</section>
+
+					<section class="setup-preview firefly-card">
+						<div>
+							<p class="eyebrow">Setup</p>
+							<h2>设备内容已经收进这里</h2>
+							<p>
+								顶栏不再单独放“设备”，从关于页进入即可。当前展柜记录了 ThinkPad P14s Gen 5、
+								ThinkPad X230i、Windows 11、NixOS 和我的开发工具链。
+							</p>
+							<a class="firefly-button" href={`${baseUrl}setup/`}>
+								<MonitorCog size={17} /> 查看设备展柜
+							</a>
+						</div>
+						<div class="mini-device" aria-hidden="true">
+							<div class="mini-screen">
+								<span></span><span></span><span></span>
+							</div>
+							<div class="mini-base"></div>
+						</div>
+					</section>
+				</section>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.about-page {
+		padding-top: 2rem;
+	}
+
+	.about-grid {
+		display: grid;
+		grid-template-columns: 16.5rem minmax(0, 1fr);
+		gap: 1rem;
+		align-items: start;
+	}
+
+	.content-column {
+		display: grid;
+		gap: 1rem;
+		min-width: 0;
+	}
+
+	.about-hero,
+	.setup-preview {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(250px, 0.45fr);
+		gap: 1rem;
+		align-items: center;
+		padding: clamp(1.2rem, 3vw, 2rem);
+	}
+
+	.eyebrow {
+		margin: 0 0 0.45rem;
+		color: var(--primary);
+		font-size: 0.72rem;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	h1,
+	h2,
+	p {
+		margin-top: 0;
+	}
+
+	h1 {
+		max-width: 760px;
+		margin-bottom: 0.8rem;
+		font-size: clamp(2.25rem, 5vw, 4.1rem);
+		line-height: 1.04;
+	}
+
+	.about-hero p,
+	.setup-preview p,
+	.entry-card p {
+		color: rgb(var(--gray));
+		line-height: 1.78;
+	}
+
+	.contact-panel {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.65rem;
+	}
+
+	.contact-panel a {
+		display: flex;
+		align-items: center;
+		min-height: 3.2rem;
+		border: 1px solid var(--line-divider);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.56);
+		padding: 0 0.75rem;
+		color: rgb(var(--gray-dark));
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.entry-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.entry-card {
+		display: grid;
+		align-content: start;
+		gap: 0.6rem;
+		min-height: 210px;
+		padding: 1rem;
+		color: rgb(var(--gray-dark));
+		text-decoration: none;
+		transition: transform 180ms ease, box-shadow 180ms ease;
+	}
+
+	.entry-card:hover {
+		box-shadow: var(--shadow-lift);
+		transform: translateY(-3px);
+	}
+
+	.entry-card :global(svg) {
+		color: var(--primary);
+	}
+
+	.entry-card strong {
+		font-size: 1.05rem;
+	}
+
+	.entry-card span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		margin-top: auto;
+		color: var(--primary);
+		font-size: 0.8rem;
+		font-weight: 800;
+	}
+
+	.setup-preview {
+		overflow: hidden;
+	}
+
+	.setup-preview .firefly-button {
+		gap: 0.38rem;
+		width: fit-content;
+		min-height: 2.65rem;
+		padding: 0 0.85rem;
+	}
+
+	.mini-device {
+		position: relative;
+		min-height: 250px;
+		border-radius: 8px;
+		background:
+			radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.94), transparent 32%),
+			linear-gradient(135deg, oklch(0.93 0.05 165), oklch(0.9 0.04 220));
+	}
+
+	.mini-screen {
+		position: absolute;
+		left: 16%;
+		right: 16%;
+		top: 24%;
+		display: grid;
+		gap: 0.55rem;
+		border: 10px solid oklch(0.24 0.026 180);
+		border-radius: 8px;
+		background: oklch(0.17 0.02 180);
+		padding: 1.3rem;
+	}
+
+	.mini-screen span {
+		height: 0.5rem;
+		border-radius: 999px;
+		background: oklch(0.78 0.12 165 / 0.7);
+	}
+
+	.mini-screen span:nth-child(2) {
+		width: 70%;
+		background: rgba(255, 255, 255, 0.22);
+	}
+
+	.mini-screen span:nth-child(3) {
+		width: 52%;
+	}
+
+	.mini-base {
+		position: absolute;
+		left: 24%;
+		right: 24%;
+		bottom: 24%;
+		height: 10px;
+		border-radius: 999px;
+		background: oklch(0.32 0.025 180);
+	}
+
+	@media (max-width: 980px) {
+		.about-grid,
+		.about-hero,
+		.setup-preview {
+			grid-template-columns: 1fr;
+		}
+
+		.entry-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.contact-panel {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

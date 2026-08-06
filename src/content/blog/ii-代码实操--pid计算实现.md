@@ -1,7 +1,7 @@
 ---
 title: 'PID计算实现'
 description: 'Obsidian note: PID计算实现'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/PID计算实现.md'
 tags: ['实操/开发']
 ---

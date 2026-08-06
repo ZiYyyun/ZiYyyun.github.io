@@ -1,7 +1,7 @@
 ---
 title: 'IC-ES8311'
 description: 'Obsidian note: IC-ES8311'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/IC-ES8311.md'
 tags: ['IC', 'esp32']
 ---

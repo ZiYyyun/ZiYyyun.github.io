@@ -1,7 +1,7 @@
 ---
 title: '寄存器操作技巧--位运算'
 description: 'Obsidian note: 寄存器操作技巧--位运算'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/寄存器操作技巧--位运算.md'
 tags: ['理论/开发/嵌入式/8051']
 ---

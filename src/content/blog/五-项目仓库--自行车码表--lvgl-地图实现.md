@@ -1,7 +1,7 @@
 ---
 title: 'LVGL-地图实现'
 description: 'Obsidian note: LVGL-地图实现'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: '五、项目仓库/自行车码表/LVGL-地图实现.md'
 tags: ['LVGL', '实操/开发/嵌入式/STM32/项目/自行车码表']
 ---

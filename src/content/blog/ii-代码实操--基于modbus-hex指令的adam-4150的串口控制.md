@@ -1,7 +1,7 @@
 ---
 title: '基于Modbus_HEX指令的ADAM-4150的串口控制'
 description: 'Obsidian note: 基于Modbus_HEX指令的ADAM-4150的串口控制'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/基于Modbus_HEX指令的ADAM-4150的串口控制.md'
 tags: ['Python']
 ---

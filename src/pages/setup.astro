@@ -1,24 +1,57 @@
 ---
+import {
+	ArrowUpRight,
+	GitBranch,
+} from '@lucide/astro';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import ProfileCard from '../components/ProfileCard.astro';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
-const devItems = [
-	'Node.js 22+',
-	'Astro',
-	'bun / npm',
-	'VS Code',
-	'GitHub Actions',
+const machines = [
+	{
+		name: 'ThinkPad P14s Gen 5',
+		role: '主力开发机',
+		system: 'Windows 11',
+		accent: 'mint',
+		sticker: 'P14s',
+		screen: ['PS C:\\Users\\ZiYyun', 'bun run build', 'astro sync notes', 'deploy: github-pages'],
+		brief: '日常写作、Astro 构建、嵌入式工具链、轻量图形任务和远程工作都在这台机器上完成。',
+		specs: [
+			{ label: 'CPU', value: 'Intel Core Ultra 7 155H' },
+			{ label: 'Memory', value: 'DDR5 8G x 2 / 3800MHz' },
+			{ label: 'GPU', value: 'NVIDIA RTX 500 Ada' },
+			{ label: 'OS', value: 'Windows 11 + WSL / PowerShell' },
+		],
+		workflow: ['Astro / React 博客构建', 'Obsidian 长期笔记', 'VS Code + Git', '嵌入式串口与调试工具'],
+	},
+	{
+		name: 'ThinkPad X230i',
+		role: 'NixOS 实验机',
+		system: 'NixOS',
+		accent: 'blue',
+		sticker: 'X230i',
+		screen: ['nixos-rebuild switch', 'flake.lock updated', 'hosts/x230i', 'git status --short'],
+		brief: '一台老 ThinkPad，用来折腾声明式系统、Nix flakes、最小化桌面环境和 Linux 侧工具链。',
+		specs: [
+			{ label: 'CPU', value: 'Intel Core i3-3110M（常见低配补充）' },
+			{ label: 'Memory', value: 'DDR3 2G x 2' },
+			{ label: 'Graphics', value: 'Intel HD Graphics 4000' },
+			{ label: 'OS', value: 'NixOS / Flakes' },
+		],
+		workflow: ['NixOS 配置实验', '轻量 Linux 开发', 'SSH / Git 工作流', '旧硬件性能边界测试'],
+	},
 ];
 
-const gearItems = [
-	'主力笔记本',
-	'桌面开发机',
-	'键盘 / 鼠标 / 显示器',
-	'系统镜像与备份',
+const devStack = [
+	{ label: '前端与博客', items: ['Astro', 'React', 'Markdown / MDX', 'Expressive Code'] },
+	{ label: '包管理与构建', items: ['npm', 'bun', 'Node.js 22+', 'GitHub Actions'] },
+	{ label: '编辑与笔记', items: ['VS Code', 'Obsidian', 'Git', 'PowerShell'] },
+	{ label: 'Linux / Embedded', items: ['NixOS', 'STM32', 'ESP32', '串口工具'] },
 ];
+
+const nixRepoUrl = 'https://github.com/ZiYyyun/ZiYyun-NixOSConfiguration';
 ---
 
 <!doctype html>
@@ -32,29 +65,107 @@ const gearItems = [
 			<div class="page-grid">
 				<ProfileCard />
 				<section class="content-column">
-					<header class="page-heading">
-						<p class="eyebrow">Dev Setup</p>
-						<h1>开发环境与设备</h1>
-						<p>后面可以把你的电脑配置、终端工具链和常用环境都塞进来。</p>
+					<header class="setup-hero firefly-card">
+						<div class="hero-copy">
+							<p class="eyebrow">Workbench</p>
+							<h1>开发环境与机器展柜</h1>
+							<p>
+								两台 ThinkPad 分工明确：一台负责日常生产力和构建，一台负责 NixOS 与 Linux 实验。
+								这里会慢慢变成我的硬件、系统、工具链和配置仓库索引。
+							</p>
+							<div class="hero-actions">
+								<a class="firefly-button" href={nixRepoUrl} target="_blank" rel="noreferrer">
+									<GitBranch size={17} /> NixOS 配置
+								</a>
+								<a class="ghost-link" href={`${import.meta.env.BASE_URL}about/`}>
+									回到关于 <ArrowUpRight size={16} />
+								</a>
+							</div>
+						</div>
+						<div class="desk-visual" aria-hidden="true">
+							<div class="wall-card one"><span>flake.nix</span></div>
+							<div class="wall-card two"><span>Obsidian</span></div>
+							<div class="main-screen">
+								<div class="screen-bar"><i></i><i></i><i></i></div>
+								<div class="screen-lines">
+									<span></span><span></span><span></span><span></span>
+								</div>
+							</div>
+							<div class="keyboard"></div>
+						</div>
 					</header>
 
-					<section class="setup-section firefly-card">
-						<h2>开发环境</h2>
-						<div class="chips">
-							{devItems.map((item) => <span>{item}</span>)}
+					<section class="machines">
+						{machines.map((machine) => (
+							<article class:list={['machine-card', 'firefly-card', machine.accent]}>
+								<div class="machine-visual" aria-hidden="true">
+									<div class="thinkpad">
+										<div class="display">
+											<div class="display-bar"><i></i><i></i><i></i><span>{machine.system}</span></div>
+											<div class="display-code">
+												{machine.screen.map((line) => <span>{line}</span>)}
+											</div>
+										</div>
+										<div class="hinge"></div>
+										<div class="deck">
+											<span class="sticker">{machine.sticker}</span>
+											<span class="trackpoint"></span>
+											<div class="key-row">{Array.from({ length: 13 }).map(() => <i></i>)}</div>
+											<div class="key-row short">{Array.from({ length: 10 }).map(() => <i></i>)}</div>
+											<div class="touchpad"></div>
+										</div>
+										<div class="shadow"></div>
+									</div>
+								</div>
+								<div class="machine-body">
+									<p class="machine-role">{machine.role}</p>
+									<h2>{machine.name}</h2>
+									<p>{machine.brief}</p>
+									<div class="spec-grid">
+										{machine.specs.map((spec) => (
+											<div class="spec-item">
+												<span>{spec.label}</span>
+												<strong>{spec.value}</strong>
+											</div>
+										))}
+									</div>
+									<div class="workflow">
+										{machine.workflow.map((item) => <span>{item}</span>)}
+									</div>
+								</div>
+							</article>
+						))}
+					</section>
+
+					<section class="stack-section firefly-card">
+						<header>
+							<p class="eyebrow">Toolchain</p>
+							<h2>开发栈</h2>
+						</header>
+						<div class="stack-grid">
+							{devStack.map((group) => (
+								<div class="stack-group">
+									<strong>{group.label}</strong>
+									<div>{group.items.map((item) => <span>{item}</span>)}</div>
+								</div>
+							))}
 						</div>
 					</section>
 
-					<section class="setup-section firefly-card">
-						<h2>设备清单</h2>
-						<div class="chips">
-							{gearItems.map((item) => <span>{item}</span>)}
+					<section class="nix-section firefly-card">
+						<div>
+							<p class="eyebrow">NixOS</p>
+							<h2>声明式系统配置</h2>
+							<p>
+								X230i 的系统配置已经开源，后面可以把 hosts、modules、desktop、shell 和开发环境拆成更细的展示卡。
+							</p>
 						</div>
-					</section>
-
-					<section class="setup-section firefly-card">
-						<h2>未来扩展</h2>
-						<p>这页也可以扩成桌面、笔记本、显示器、路由器、NAS 和工作流配置卡片。</p>
+						<a class="repo-card" href={nixRepoUrl} target="_blank" rel="noreferrer">
+							<GitBranch size={20} />
+							<span>ZiYyun-NixOSConfiguration</span>
+							<small>configuration.nix / flakes / hosts</small>
+							<ArrowUpRight size={16} />
+						</a>
 					</section>
 				</section>
 			</div>
@@ -81,60 +192,613 @@ const gearItems = [
 		gap: 1rem;
 	}
 
-	.page-heading {
-		padding: 0 0.25rem;
+	.setup-hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+		gap: 1.2rem;
+		padding: clamp(1.2rem, 3vw, 2rem);
+		overflow: hidden;
 	}
 
 	.eyebrow {
-		margin: 0 0 0.35rem;
+		margin: 0 0 0.45rem;
 		color: var(--primary);
-		font-size: 0.76rem;
-		font-weight: 700;
+		font-size: 0.72rem;
+		font-weight: 900;
 		text-transform: uppercase;
 	}
 
-	.page-heading h1 {
-		margin-bottom: 0.45rem;
-		font-size: clamp(2.2rem, 5vw, 3.6rem);
+	h1,
+	h2,
+	p {
+		margin-top: 0;
 	}
 
-	.page-heading p:last-child {
-		margin: 0;
+	h1 {
+		max-width: 720px;
+		margin-bottom: 0.8rem;
+		font-size: clamp(2.25rem, 5vw, 4.4rem);
+		line-height: 1.02;
+	}
+
+	.hero-copy > p:last-of-type,
+	.machine-body > p,
+	.nix-section p {
 		color: rgb(var(--gray));
-		font-size: 0.92rem;
+		line-height: 1.82;
 	}
 
-	.setup-section {
-		padding: 1rem 1.1rem;
-	}
-
-	.setup-section h2 {
-		margin-bottom: 0.65rem;
-		font-size: 1.15rem;
-	}
-
-	.chips {
+	.hero-actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.45rem;
+		gap: 0.65rem;
+		margin-top: 1.35rem;
 	}
 
-	.chips span {
+	.hero-actions a {
+		gap: 0.38rem;
+		min-height: 2.65rem;
+		padding: 0 0.85rem;
+		text-decoration: none;
+	}
+
+	.ghost-link {
+		display: inline-flex;
+		align-items: center;
+		border-radius: 0.75rem;
+		color: rgb(var(--gray-dark));
+		font-weight: 700;
+	}
+
+	.desk-visual {
+		position: relative;
+		min-height: 300px;
+		border-radius: 8px;
+		background:
+			linear-gradient(160deg, oklch(0.92 0.06 180), transparent 58%),
+			linear-gradient(24deg, oklch(0.95 0.035 210), rgba(255, 255, 255, 0.65));
+		overflow: hidden;
+	}
+
+	.desk-visual::before {
+		position: absolute;
+		inset: 11% 12% auto auto;
+		width: 72px;
+		height: 72px;
+		border: 1px solid rgba(255, 255, 255, 0.7);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.28);
+		content: '';
+		transform: rotate(10deg);
+	}
+
+	.desk-visual::after {
+		position: absolute;
+		left: 7%;
+		bottom: 8%;
+		width: 38%;
+		height: 10px;
+		border-radius: 999px;
+		background: rgba(52, 111, 96, 0.12);
+		content: '';
+		filter: blur(4px);
+	}
+
+	.main-screen {
+		position: absolute;
+		left: 12%;
+		right: 12%;
+		top: 26%;
+		height: 46%;
+		border: 9px solid oklch(0.25 0.025 180);
+		border-radius: 8px;
+		background: oklch(0.17 0.02 175);
+		box-shadow: 0 24px 54px rgba(20, 65, 54, 0.18);
+	}
+
+	.screen-bar {
+		display: flex;
+		gap: 0.35rem;
+		padding: 0.65rem;
+	}
+
+	.screen-bar i {
+		width: 0.46rem;
+		height: 0.46rem;
+		border-radius: 999px;
+		background: oklch(0.72 0.12 20);
+	}
+
+	.screen-bar i:nth-child(2) { background: oklch(0.8 0.12 80); }
+	.screen-bar i:nth-child(3) { background: oklch(0.76 0.12 155); }
+
+	.screen-lines {
+		display: grid;
+		gap: 0.5rem;
+		padding: 0.2rem 1rem;
+	}
+
+	.screen-lines span {
+		height: 0.45rem;
+		border-radius: 999px;
+		background: oklch(0.78 0.12 165 / 0.62);
+	}
+
+	.screen-lines span:nth-child(2) { width: 72%; background: rgba(255, 255, 255, 0.22); }
+	.screen-lines span:nth-child(3) { width: 54%; }
+	.screen-lines span:nth-child(4) { width: 82%; background: rgba(255, 255, 255, 0.18); }
+
+	.keyboard {
+		position: absolute;
+		left: 19%;
+		right: 19%;
+		top: 73%;
+		height: 11%;
+		border-radius: 0 0 18px 18px;
+		background: linear-gradient(180deg, oklch(0.39 0.035 180), oklch(0.25 0.026 180));
+		transform: perspective(280px) rotateX(58deg);
+		transform-origin: top;
+	}
+
+	.wall-card {
+		position: absolute;
+		display: inline-flex;
+		align-items: center;
+		border: 1px solid rgba(255, 255, 255, 0.72);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.58);
+		padding: 0.5rem 0.65rem;
+		color: var(--btn-content);
+		font-size: 0.72rem;
+		font-weight: 800;
+		backdrop-filter: blur(10px);
+	}
+
+	.wall-card.one {
+		left: 8%;
+		top: 9%;
+		animation: card-float 6.5s ease-in-out infinite;
+	}
+
+	.wall-card.two {
+		right: 7%;
+		top: 13%;
+		animation: card-float 7.2s ease-in-out 0.8s infinite;
+	}
+
+	.machines {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	.machine-card {
+		display: grid;
+		grid-template-rows: 260px minmax(0, 1fr);
+		overflow: hidden;
+		transition:
+			transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+			box-shadow 240ms ease,
+			border-color 240ms ease;
+	}
+
+	.machine-card:hover {
+		border-color: color-mix(in srgb, var(--primary) 30%, var(--line-divider));
+		box-shadow: var(--shadow-lift);
+		transform: translateY(-4px);
+	}
+
+	.machine-card:hover .thinkpad {
+		transform: translate(-50%, -52%);
+	}
+
+	.machine-visual {
+		position: relative;
+		background:
+			linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+			radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.96), transparent 31%),
+			linear-gradient(135deg, oklch(0.94 0.045 165), oklch(0.89 0.035 210));
+		background-size: 30px 30px, 30px 30px, auto, auto;
+		overflow: hidden;
+	}
+
+	.machine-card.blue .machine-visual {
+		background:
+			linear-gradient(90deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+			radial-gradient(circle at 72% 22%, rgba(255, 255, 255, 0.88), transparent 34%),
+			linear-gradient(135deg, oklch(0.94 0.04 215), oklch(0.91 0.045 245));
+		background-size: 30px 30px, 30px 30px, auto, auto;
+	}
+
+	.thinkpad {
+		position: absolute;
+		left: 50%;
+		top: 52%;
+		width: min(84%, 360px);
+		height: 210px;
+		transform: translate(-50%, -50%);
+		transition: transform 260ms var(--ease-out);
+	}
+
+	.display {
+		position: absolute;
+		left: 8%;
+		right: 8%;
+		top: 0;
+		height: 124px;
+		border: 9px solid oklch(0.2 0.02 170);
+		border-radius: 8px 8px 5px 5px;
+		background: linear-gradient(145deg, oklch(0.17 0.018 170), oklch(0.24 0.026 210));
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+			0 20px 40px rgba(24, 64, 55, 0.2);
+	}
+
+	.display::after {
+		position: absolute;
+		right: 8px;
+		bottom: 7px;
+		width: 5px;
+		height: 5px;
+		border-radius: 999px;
+		background: oklch(0.72 0.14 24);
+		box-shadow: 7px 0 0 oklch(0.78 0.14 70);
+		content: '';
+	}
+
+	.display-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.34rem;
+		height: 28px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		padding: 0 0.6rem;
+	}
+
+	.display-bar i {
+		width: 6px;
+		height: 6px;
+		border-radius: 999px;
+		background: oklch(0.7 0.14 20);
+	}
+
+	.display-bar i:nth-child(2) { background: oklch(0.78 0.13 80); }
+	.display-bar i:nth-child(3) { background: oklch(0.74 0.13 150); }
+
+	.display-bar span {
+		margin-left: auto;
+		color: rgba(255, 255, 255, 0.45);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.62rem;
+	}
+
+	.display-code {
+		display: grid;
+		gap: 0.34rem;
+		padding: 0.65rem 0.85rem;
+	}
+
+	.display-code span {
+		width: 100%;
+		color: oklch(0.82 0.12 165);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.64rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.display-code span::before {
+		margin-right: 0.35rem;
+		color: rgba(255, 255, 255, 0.35);
+		content: '>';
+	}
+
+	.hinge {
+		position: absolute;
+		left: 22%;
+		right: 22%;
+		top: 124px;
+		height: 8px;
+		border-radius: 999px;
+		background: linear-gradient(90deg, oklch(0.25 0.022 170), oklch(0.38 0.03 180), oklch(0.25 0.022 170));
+	}
+
+	.deck {
+		position: absolute;
+		left: 3%;
+		right: 3%;
+		top: 132px;
+		height: 58px;
+		border-radius: 6px 6px 16px 16px;
+		background:
+			linear-gradient(180deg, oklch(0.36 0.025 170), oklch(0.22 0.018 170));
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.14),
+			0 24px 38px rgba(22, 48, 43, 0.22);
+		transform: perspective(320px) rotateX(52deg);
+		transform-origin: top;
+	}
+
+	.sticker {
+		position: absolute;
+		right: 16px;
+		top: 8px;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.12rem 0.34rem;
+		color: rgba(255, 255, 255, 0.72);
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.62rem;
+	}
+
+	.key-row {
+		position: absolute;
+		left: 18px;
+		right: 18px;
+		top: 12px;
+		display: grid;
+		grid-template-columns: repeat(13, 1fr);
+		gap: 4px;
+	}
+
+	.key-row.short {
+		left: 32px;
+		right: 58px;
+		top: 27px;
+		grid-template-columns: repeat(10, 1fr);
+	}
+
+	.key-row i {
+		height: 6px;
+		border-radius: 2px;
+		background: rgba(255, 255, 255, 0.16);
+		box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
+	}
+
+	.trackpoint {
+		position: absolute;
+		left: 48%;
+		top: 29px;
+		width: 7px;
+		height: 7px;
+		border-radius: 999px;
+		background: oklch(0.62 0.18 24);
+		box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+	}
+
+	.touchpad {
+		position: absolute;
+		left: 40%;
+		bottom: 6px;
+		width: 66px;
+		height: 16px;
+		border-radius: 4px;
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	.shadow {
+		position: absolute;
+		left: 12%;
+		right: 12%;
+		bottom: 1px;
+		height: 24px;
+		border-radius: 50%;
+		background: rgba(26, 58, 50, 0.18);
+		filter: blur(12px);
+	}
+
+	.machine-body {
+		padding: 1.1rem;
+	}
+
+	.machine-role {
+		margin-bottom: 0.35rem;
+		color: var(--primary);
+		font-size: 0.72rem;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.machine-body h2 {
+		margin-bottom: 0.55rem;
+		font-size: clamp(1.35rem, 2vw, 1.8rem);
+	}
+
+	.spec-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.55rem;
+		margin-top: 1rem;
+	}
+
+	.spec-item {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.18rem;
+		border: 1px solid var(--line-divider);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.48);
+		padding: 0.65rem;
+	}
+
+	.spec-item span {
+		color: rgb(var(--gray));
+		font-size: 0.68rem;
+		text-transform: uppercase;
+	}
+
+	.spec-item strong {
+		font-size: 0.84rem;
+		line-height: 1.35;
+	}
+
+	.workflow {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.42rem;
+		margin-top: 0.9rem;
+	}
+
+	.workflow span,
+	.stack-group span {
 		border-radius: 999px;
 		background: var(--btn-regular-bg);
-		padding: 0.18rem 0.55rem;
+		padding: 0.18rem 0.5rem;
 		color: var(--btn-content);
-		font-size: 0.74rem;
+		font-size: 0.72rem;
+		font-weight: 700;
 	}
 
-	.setup-section p {
-		margin: 0;
+	.workflow span {
+		transition:
+			background 180ms ease,
+			transform 180ms var(--ease-out);
+	}
+
+	.workflow span:hover {
+		background: var(--btn-regular-bg-hover);
+		transform: translateY(-1px);
+	}
+
+	.stack-section,
+	.nix-section {
+		padding: 1.2rem;
+	}
+
+	.stack-section header {
+		margin-bottom: 1rem;
+	}
+
+	.stack-section h2,
+	.nix-section h2 {
+		margin-bottom: 0.35rem;
+	}
+
+	.stack-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 0.8rem;
+	}
+
+	.stack-group {
+		border: 1px solid var(--line-divider);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.5);
+		padding: 0.8rem;
+	}
+
+	.stack-group strong {
+		display: block;
+		margin-bottom: 0.55rem;
+		font-size: 0.86rem;
+	}
+
+	.stack-group div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+	}
+
+	.nix-section {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(280px, 0.58fr);
+		gap: 1rem;
+		align-items: center;
+	}
+
+	.repo-card {
+		position: relative;
+		display: grid;
+		gap: 0.35rem;
+		border: 1px solid var(--line-divider);
+		border-radius: 8px;
+		background:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(224, 248, 238, 0.58));
+		padding: 1rem;
+		color: rgb(var(--gray-dark));
+		text-decoration: none;
+		transition:
+			border-color 200ms ease,
+			box-shadow 200ms ease,
+			transform 200ms var(--ease-out);
+	}
+
+	.repo-card:hover {
+		border-color: color-mix(in srgb, var(--primary) 30%, var(--line-divider));
+		box-shadow: var(--shadow-card);
+		transform: translateY(-2px);
+	}
+
+	.repo-card :global(svg:first-child) {
+		color: var(--primary);
+	}
+
+	.repo-card small {
 		color: rgb(var(--gray));
+	}
+
+	.repo-card :global(svg:last-child) {
+		position: absolute;
+		right: 1rem;
+		top: 1rem;
+		color: rgb(var(--gray));
+	}
+
+	@media (max-width: 1120px) {
+		.machines,
+		.stack-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 	}
 
 	@media (max-width: 980px) {
-		.page-grid {
+		.page-grid,
+		.setup-hero,
+		.nix-section {
 			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.machines,
+		.stack-grid,
+		.spec-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.machine-card {
+			grid-template-rows: 190px minmax(0, 1fr);
+		}
+
+		.desk-visual {
+			min-height: 240px;
+		}
+	}
+
+	@keyframes card-float {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+
+		50% {
+			transform: translateY(-6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.wall-card {
+			animation: none;
+		}
+
+		.machine-card,
+		.thinkpad,
+		.workflow span,
+		.repo-card {
+			transition: none;
 		}
 	}
 </style>

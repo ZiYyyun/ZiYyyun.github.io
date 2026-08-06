@@ -52,26 +52,12 @@ const { title, description, image = FallbackImage } = Astro.props;
 			const cursor = document.createElement('div');
 			cursor.className = 'site-cursor';
 			cursor.setAttribute('data-site-cursor', '');
-			cursor.innerHTML = '<span class="site-cursor__ring"></span><span class="site-cursor__dot"></span><span class="site-cursor__spark"></span>';
+			cursor.innerHTML = '<span class="site-cursor__arrow"></span>';
 			document.body.append(cursor);
 			root.classList.add('site-cursor-ready');
 
-			let pointerX = window.innerWidth / 2;
-			let pointerY = window.innerHeight / 2;
-			let currentX = pointerX;
-			let currentY = pointerY;
-			let raf = 0;
-
-			const render = () => {
-				currentX += (pointerX - currentX) * 0.22;
-				currentY += (pointerY - currentY) * 0.22;
-				cursor.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-				raf = window.requestAnimationFrame(render);
-			};
-
 			const move = (event) => {
-				pointerX = event.clientX;
-				pointerY = event.clientY;
+				cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
 				cursor.classList.add('is-visible');
 			};
 
@@ -98,11 +84,6 @@ const { title, description, image = FallbackImage } = Astro.props;
 				pop(event);
 			}, { passive: true });
 			window.addEventListener('pointerleave', () => cursor.classList.remove('is-visible'));
-			raf = window.requestAnimationFrame(render);
-
-			window.addEventListener('beforeunload', () => {
-				window.cancelAnimationFrame(raf);
-			}, { once: true });
 		};
 
 		if (document.body) createCursor();

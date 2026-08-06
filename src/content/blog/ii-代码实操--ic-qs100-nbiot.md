@@ -1,7 +1,7 @@
 ---
 title: 'IC-QS100-NBIoT'
 description: 'Obsidian note: IC-QS100-NBIoT'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/IC-QS100-NBIoT.md'
 tags: ['实操/开发/嵌入式/STM32/项目/牛马定位器', 'IC']
 ---

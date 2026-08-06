@@ -7,6 +7,7 @@
 	--hue: 165;
 	--radius-large: 1rem;
 	--page-width: 1380px;
+	--ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
 	--black: 28, 35, 34;
 	--gray-dark: 52, 61, 60;
 	--gray: 116, 127, 125;
@@ -237,71 +238,49 @@ hr {
 		opacity: 1;
 	}
 
-	.site-cursor__ring,
-	.site-cursor__dot,
-	.site-cursor__spark {
+	.site-cursor__arrow {
 		position: absolute;
 		left: 0;
 		top: 0;
-		border-radius: 999px;
-		transform: translate(-50%, -50%);
-		pointer-events: none;
-	}
-
-	.site-cursor__ring {
-		width: 34px;
-		height: 34px;
-		border: 1px solid color-mix(in srgb, var(--primary) 72%, white 28%);
+		width: 25px;
+		height: 31px;
+		border: 1px solid color-mix(in srgb, var(--primary) 64%, white 36%);
+		border-radius: 3px 10px 10px 10px;
 		background:
-			radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.8), transparent 28%),
-			color-mix(in srgb, var(--primary) 16%, transparent);
+			linear-gradient(135deg, rgba(255, 255, 255, 0.94) 0 42%, color-mix(in srgb, var(--primary) 44%, white 56%) 43% 100%);
 		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.45) inset,
-			0 10px 26px color-mix(in srgb, var(--primary) 26%, transparent),
-			0 0 22px color-mix(in srgb, var(--primary) 22%, transparent);
-		backdrop-filter: blur(3px) saturate(1.25);
+			0 0 0 1px rgba(255, 255, 255, 0.62) inset,
+			0 8px 22px color-mix(in srgb, var(--primary) 24%, transparent),
+			0 1px 2px rgba(13, 32, 27, 0.18);
+		clip-path: polygon(0 0, 0 27px, 7px 21px, 12px 31px, 17px 28px, 12px 18px, 22px 18px);
+		pointer-events: none;
+		transform-origin: 2px 2px;
 		transition:
-			width 180ms ease,
-			height 180ms ease,
-			border-color 180ms ease,
-			background 180ms ease,
-			transform 180ms ease;
+			filter 120ms ease,
+			transform 120ms ease,
+			background 120ms ease;
 	}
 
-	.site-cursor__dot {
+	.site-cursor__arrow::after {
+		position: absolute;
+		left: 6px;
+		top: 5px;
 		width: 7px;
-		height: 7px;
-		background: color-mix(in srgb, var(--primary) 78%, white 22%);
-		box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 58%, transparent);
-	}
-
-	.site-cursor__spark {
-		width: 9px;
-		height: 9px;
-		margin-left: 13px;
-		margin-top: -12px;
-		border-radius: 55% 45% 62% 38%;
-		background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), color-mix(in srgb, var(--primary) 52%, white 48%));
-		box-shadow: 0 0 14px color-mix(in srgb, var(--primary) 38%, transparent);
-		rotate: 28deg;
-		animation: cursor-spark 1.8s ease-in-out infinite;
-	}
-
-	.site-cursor.is-interactive .site-cursor__ring {
-		width: 48px;
-		height: 48px;
-		border-color: color-mix(in srgb, var(--primary) 58%, white 42%);
+		height: 12px;
+		border-radius: 999px;
 		background:
-			radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.85), transparent 25%),
-			color-mix(in srgb, var(--primary) 24%, transparent);
+			linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0));
+		content: '';
+		rotate: -32deg;
 	}
 
-	.site-cursor.is-interactive .site-cursor__dot {
-		transform: translate(-50%, -50%) scale(0.72);
+	.site-cursor.is-interactive .site-cursor__arrow {
+		filter: drop-shadow(0 0 12px color-mix(in srgb, var(--primary) 34%, transparent));
+		transform: scale(1.12);
 	}
 
-	.site-cursor.is-pressed .site-cursor__ring {
-		transform: translate(-50%, -50%) scale(0.78);
+	.site-cursor.is-pressed .site-cursor__arrow {
+		transform: scale(0.9);
 	}
 
 	.site-cursor-ripple {
@@ -318,19 +297,6 @@ hr {
 		pointer-events: none;
 		transform: translate(-50%, -50%);
 		animation: cursor-ripple 620ms ease-out forwards;
-	}
-}
-
-@keyframes cursor-spark {
-	0%,
-	100% {
-		opacity: 0.72;
-		transform: translate(-50%, -50%) scale(0.86);
-	}
-
-	50% {
-		opacity: 1;
-		transform: translate(-50%, -50%) scale(1.1);
 	}
 }
 
@@ -352,6 +318,10 @@ hr {
 	background: var(--card-bg);
 	box-shadow: var(--shadow-card);
 	backdrop-filter: blur(16px) saturate(1.12);
+	transition:
+		border-color 220ms ease,
+		box-shadow 220ms ease,
+		background 220ms ease;
 }
 
 .firefly-button {
@@ -364,9 +334,9 @@ hr {
 	color: var(--btn-content);
 	text-decoration: none;
 	transition:
-		background 0.2s ease,
-		color 0.2s ease,
-		transform 0.2s ease;
+		background 180ms ease,
+		color 180ms ease,
+		transform 180ms var(--ease-out);
 }
 
 .firefly-button:hover {
@@ -552,6 +522,90 @@ hr {
 
 .markdown-body .expressive-code {
 	margin: 1.6rem 0;
+}
+
+.markdown-body .expressive-code figure {
+	border-radius: 8px;
+	box-shadow: 0 16px 36px rgba(23, 53, 45, 0.08);
+}
+
+:root.dark .markdown-body .expressive-code figure {
+	box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+}
+
+.markdown-body {
+	color: rgb(var(--gray-dark));
+	font-size: clamp(1rem, 0.28vw + 0.97rem, 1.08rem);
+	line-height: 1.88;
+}
+
+.markdown-body :is(p, ul, ol, blockquote, table, pre, .expressive-code) {
+	max-width: 76ch;
+}
+
+.markdown-body p {
+	margin-bottom: 1.28rem;
+}
+
+.markdown-body h2 {
+	position: relative;
+	margin: 3rem 0 1rem;
+	border-top: 0;
+	padding: 0.15rem 0 0.15rem 1rem;
+	font-size: clamp(1.36rem, 1vw + 1rem, 1.82rem);
+	line-height: 1.35;
+}
+
+.markdown-body h2::before {
+	position: absolute;
+	left: 0;
+	top: 0.34em;
+	display: block;
+	width: 0.32rem;
+	height: 0.82em;
+	margin: 0;
+	border-radius: 999px;
+	background: linear-gradient(180deg, var(--primary), oklch(0.76 0.1 195));
+	content: '';
+}
+
+.markdown-body h3 {
+	margin: 2.05rem 0 0.72rem;
+	font-size: 1.2rem;
+}
+
+.markdown-body h3::before {
+	margin-right: 0.35rem;
+	color: var(--primary);
+	content: '#';
+	font-size: 0.72em;
+}
+
+.markdown-body blockquote {
+	border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+	border-left: 4px solid var(--primary);
+	border-radius: 8px;
+	background: linear-gradient(100deg, oklch(0.97 0.022 165), rgba(255, 255, 255, 0.68));
+	padding: 1rem 1.15rem;
+}
+
+.markdown-body :not(pre) > code {
+	border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+	background: var(--btn-regular-bg);
+	color: var(--btn-content);
+}
+
+.markdown-body table {
+	border-color: var(--line-divider);
+	box-shadow: 0 10px 28px rgba(30, 34, 52, 0.05);
+}
+
+.markdown-body th {
+	background: var(--btn-regular-bg);
+}
+
+:root.dark .markdown-body blockquote {
+	background: linear-gradient(100deg, oklch(0.24 0.028 165), rgba(255, 255, 255, 0.03));
 }
 
 .sr-only {

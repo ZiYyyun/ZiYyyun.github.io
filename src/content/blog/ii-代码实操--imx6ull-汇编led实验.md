@@ -1,7 +1,7 @@
 ---
 title: 'IMX6ULL-汇编LED实验'
 description: 'Obsidian note: IMX6ULL-汇编LED实验'
-pubDate: '2026-07-31'
+pubDate: '2026-08-05'
 sourcePath: 'II_代码实操/IMX6ULL-汇编LED实验.md'
 tags: ['实操/开发/嵌入式/LINUX']
 ---

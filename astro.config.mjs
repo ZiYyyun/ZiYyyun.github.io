@@ -17,7 +17,7 @@ export default defineConfig({
     base: process.env.BASE_PATH ?? (isProjectPage ? `/${githubRepo}` : undefined),
     integrations: [
         expressiveCode({
-            themes: ['github-light'],
+            themes: ['github-light', 'github-dark'],
             styleOverrides: {
                 borderRadius: '8px',
                 frames: {
